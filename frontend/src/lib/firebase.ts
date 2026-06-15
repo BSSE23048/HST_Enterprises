@@ -4,12 +4,12 @@ import { getFirestore } from 'firebase/firestore';
 
 // Paste the exact object Firebase gave you here:
 const firebaseConfig = {
-  apiKey: "AIzaSyCvMfzmCoXgL7nXeAJMh9NM_q816Eq_HWs",
-  authDomain: "hst-enterprises.firebaseapp.com",
-  projectId: "hst-enterprises",
-  storageBucket: "hst-enterprises.firebasestorage.app",
-  messagingSenderId: "12818053978",
-  appId: "1:12818053978:web:361aa441fc0ea43e5e9163"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTHDOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 // Initialize Firebase
