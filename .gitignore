@@ -1,0 +1,9 @@
+node_modules
+backend/dist
+frontend/dist
+frontend/.vite
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+.env
+.DS_Store

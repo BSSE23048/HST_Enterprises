@@ -1,0 +1,388 @@
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import type { Client, Invoice, InvoiceItem } from '../types';
+
+const COLORS = {
+  MAROON: 'rgb(121, 14, 19)', 
+  BLUE: '#232361',   
+  LIGHT_BG: '#f9f9f9',
+  BORDER: '#b0b0b0', 
+  TEXT: '#000000',   
+  SUBTEXT: '#000000',
+  MUTED: '#000000'   
+};
+
+const FONTS = {
+  HEADER: 'Helvetica',
+  BODY: 'Helvetica',
+  BOLD: 'Helvetica-Bold'
+};
+
+function formatMoney(value: number): string {
+  return value.toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+async function loadImageAsDataURL(path: string): Promise<string | null> {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string | null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+function buildLines(invoice: Invoice | null, draftItems: InvoiceItem[]) {
+  if (invoice?.items?.length) return invoice.items;
+  return draftItems
+    .filter((it) => it.description && String(it.description).trim().length > 0)
+    .map((item, index) => ({
+      lineNo: item.lineNo ?? index + 1,
+      description: item.description,
+      unit: (item as any).unit || 'Nos', 
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      lineTotal: Number(item.quantity || 0) * Number(item.unitPrice || 0)
+    }));
+}
+
+export async function renderInvoicePdf(params: {
+  client?: Client | null;
+  invoice: Invoice | null;
+  draftItems: InvoiceItem[];
+  invoiceNumber: string;
+  invoiceDate: string;
+  notes?: string;
+  recordType?: 'invoice' | 'quotation';
+  terms?: string;
+}) {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  const isQuotation = params.recordType === 'quotation';
+
+  const lines = buildLines(params.invoice, params.draftItems);
+  const subtotal = lines.reduce((s, r) => s + (r.lineTotal ?? r.quantity * r.unitPrice), 0);
+  
+  const amountPaid = params.invoice?.amountPaid || 0;
+  const balanceDue = params.invoice?.balanceDue !== undefined ? params.invoice.balanceDue : subtotal;
+
+  const logoData = await loadImageAsDataURL('/HST_logo.png');
+  const stampData = await loadImageAsDataURL('/HST_Stamp.png');
+  const signatureData = await loadImageAsDataURL('/Authorized_sign.png');
+
+  const addFooter = (docInstance: jsPDF, pageNum: number) => {
+    const footerY = pageHeight - 30; 
+    docInstance.setPage(pageNum);
+
+    docInstance.setDrawColor(COLORS.BORDER);
+    docInstance.setLineWidth(0.5);
+    docInstance.line(14, footerY, pageWidth - 14, footerY);
+
+    docInstance.setFillColor(250, 250, 252);
+    docInstance.rect(14, footerY + 0.5, pageWidth - 28, 29.5, 'F');
+
+    const col1X = 18;
+    const col2X = 85;
+    const col3X = 140;
+    const startY = footerY + 5;
+
+    docInstance.setFont(FONTS.BOLD, 'bold');
+    docInstance.setFontSize(9.5); 
+    docInstance.setTextColor(COLORS.MAROON);
+    docInstance.text('Office Address', col1X, startY);
+    
+    docInstance.setFont(FONTS.BODY, 'normal');
+    docInstance.setFontSize(8.5); 
+    docInstance.setTextColor(COLORS.TEXT);
+    docInstance.text('6- Muhammadia Electric Market,', col1X, startY + 5.5);
+    docInstance.text('15 Brandreth Road, Lahore', col1X, startY + 10.5);
+    docInstance.text('NTN # 367891-7', col1X, startY + 15.5);
+
+    docInstance.setFont(FONTS.BOLD, 'bold');
+    docInstance.setFontSize(9.5);
+    docInstance.setTextColor(COLORS.MAROON);
+    docInstance.text('Contact', col2X, startY);
+    
+    docInstance.setFont(FONTS.BODY, 'normal');
+    docInstance.setFontSize(8.5);
+    docInstance.setTextColor(COLORS.TEXT);
+    docInstance.text('Tel: 042-37664202', col2X, startY + 5.5);
+    docInstance.text('Fax: 042-37664302', col2X, startY + 10.5);
+
+    docInstance.setFont(FONTS.BOLD, 'bold');
+    docInstance.setFontSize(9.5);
+    docInstance.setTextColor(COLORS.MAROON);
+    docInstance.text('Emails', col3X, startY);
+    
+    docInstance.setFont(FONTS.BODY, 'normal');
+    docInstance.setFontSize(8.5);
+    docInstance.setTextColor(COLORS.TEXT);
+    docInstance.text('hstenterprisespk@gmail.com', col3X, startY + 5.5);
+    docInstance.text('zulfiqaragha285@gmail.com', col3X, startY + 10.5);
+    docInstance.text('aghashoaibzaib2004@gmail.com', col3X, startY + 15.5);
+  };
+
+  if (logoData) {
+    try { doc.addImage(logoData, 'PNG', 16, 12, 30, 20); } catch (e) {}
+  }
+
+  // --- OVERLAP FIX: Adjusted X position and font sizes ---
+  const textStartX = 48; 
+  
+  doc.setFont(FONTS.BOLD, 'bold');
+  doc.setFontSize(26); 
+  doc.setTextColor(COLORS.MAROON);
+  doc.text('HST ENTERPRISES', textStartX, 21); 
+  
+  doc.setFont(FONTS.BOLD, 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(COLORS.MAROON);
+  doc.text('Importer, General Order Supplier, Contractor & Services', textStartX, 27);
+
+  doc.setFont(FONTS.BOLD, 'bold');
+  doc.setFontSize(22); // Reduced from 28 so QUOTATION perfectly fits
+  doc.setTextColor(isQuotation ? COLORS.MAROON : COLORS.BLUE);
+  doc.text(isQuotation ? 'QUOTATION' : 'INVOICE', pageWidth - 16, 21, { align: 'right' }); 
+
+  let currentY = 48; 
+
+  doc.setFont(FONTS.BOLD, 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(COLORS.MUTED);
+  doc.text(isQuotation ? 'QUOTATION FOR:' : 'BILLED TO:', 16, currentY);
+
+  const metaLabelX = pageWidth - 45;
+  const metaValueX = pageWidth - 16;
+
+  doc.text(isQuotation ? 'QUOTE NO:' : 'INVOICE NO:', metaLabelX, currentY, { align: 'right' });
+  doc.setFontSize(11);
+  doc.setTextColor(COLORS.TEXT);
+  doc.text(`${params.invoice?.invoiceNumber ?? params.invoiceNumber}`, metaValueX, currentY, { align: 'right' });
+
+  currentY += 6;
+
+  const companyName = params.client?.displayName ?? params.invoice?.clientName ?? 'Client';
+  
+  doc.setFont(FONTS.BOLD, 'bold');
+  doc.setFontSize(13);
+  doc.setTextColor(COLORS.TEXT);
+  doc.text(`M/S ${companyName}`, 16, currentY);
+
+  doc.setFont(FONTS.BOLD, 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(COLORS.MUTED);
+  doc.text('DATE:', metaLabelX, currentY, { align: 'right' });
+  
+  doc.setFontSize(11);
+  doc.setTextColor(COLORS.TEXT);
+  doc.text(`${params.invoice?.invoiceDate ?? params.invoiceDate}`, metaValueX, currentY, { align: 'right' });
+
+  currentY += 6;
+
+  if (params.client?.purchaserName) {
+    doc.setFont(FONTS.BOLD, 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(COLORS.TEXT);
+    doc.text(params.client.purchaserName, 16, currentY);
+    currentY += 8;
+  } else {
+    currentY += 2;
+  }
+
+  doc.setDrawColor(COLORS.BORDER);
+  doc.setLineWidth(0.2);
+  doc.line(16, currentY, pageWidth - 16, currentY);
+  currentY += 6;
+
+  autoTable(doc, {
+    startY: currentY,
+    margin: { left: 16, right: 16, bottom: 45 },
+    pageBreak: 'auto',
+    didDrawPage: () => { addFooter(doc, doc.getNumberOfPages()); },
+    head: [['Sr', 'Description', 'Unit', 'Qty', 'Rate', 'Amount']],
+    body: lines.map((item, idx) => [
+      String(item.lineNo ?? idx + 1).padStart(2, '0'),
+      item.description,
+      (item as any).unit || 'Nos', 
+      String(item.quantity),
+      `Rs ${formatMoney(item.unitPrice)}`,
+      `Rs ${formatMoney(item.lineTotal ?? item.quantity * item.unitPrice)}`
+    ]),
+    styles: { font: FONTS.BODY, fontSize: 10, cellPadding: 3, textColor: COLORS.TEXT, lineColor: COLORS.BORDER, lineWidth: 0.1, valign: 'middle' },
+    headStyles: { fillColor: isQuotation ? COLORS.MAROON : COLORS.BLUE, textColor: 255, fontStyle: 'bold', fontSize: 10, cellPadding: 4, valign: 'middle', halign: 'center' },
+    alternateRowStyles: { fillColor: [252, 252, 253] },
+    columnStyles: { 0: { cellWidth: 12, halign: 'center' }, 1: { cellWidth: 'auto', halign: 'left' }, 2: { cellWidth: 18, halign: 'center' }, 3: { cellWidth: 15, halign: 'center' }, 4: { cellWidth: 30, halign: 'right' }, 5: { cellWidth: 35, halign: 'right' } }
+  });
+
+  const finalY = (doc as any).lastAutoTable?.finalY ?? currentY;
+  const lastPage = doc.getNumberOfPages();
+  doc.setPage(lastPage);
+
+  const totalsY = finalY + 8;
+  const totalsBoxX = pageWidth - 90;
+  
+  if (!isQuotation) {
+    doc.setFont(FONTS.BOLD, 'bold');
+    doc.setFontSize(10.5);
+    doc.setTextColor(COLORS.MAROON);
+    doc.text('Note:', 16, totalsY + 6);
+    doc.setFont(FONTS.BODY, 'normal');
+    doc.setFontSize(9.5);
+    doc.setTextColor(COLORS.TEXT);
+    doc.text('Goods once sold are not Returnable.', 16, totalsY + 11.5);
+  }
+
+  doc.setDrawColor(COLORS.BORDER);
+  doc.setLineWidth(0.5);
+  doc.line(totalsBoxX, totalsY, pageWidth - 16, totalsY);
+
+  doc.setFont(FONTS.BODY, 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(COLORS.TEXT);
+  doc.text('Subtotal:', totalsBoxX + 2, totalsY + 6);
+  doc.text(`Rs ${formatMoney(subtotal)}`, pageWidth - 16, totalsY + 6, { align: 'right' });
+
+  if (!isQuotation) {
+    doc.text('Amount Paid:', totalsBoxX + 2, totalsY + 12);
+    doc.text(`Rs ${formatMoney(amountPaid)}`, pageWidth - 16, totalsY + 12, { align: 'right' });
+
+    doc.setDrawColor(COLORS.BORDER);
+    doc.setLineWidth(0.2);
+    doc.line(totalsBoxX, totalsY + 16, pageWidth - 16, totalsY + 16);
+
+    doc.setFont(FONTS.BOLD, 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(COLORS.MAROON);
+    doc.text('Balance Due:', totalsBoxX + 2, totalsY + 22);
+    doc.text(`Rs ${formatMoney(balanceDue)}`, pageWidth - 16, totalsY + 22, { align: 'right' });
+
+    doc.setDrawColor(COLORS.MAROON);
+    doc.setLineWidth(0.5);
+    doc.line(totalsBoxX, totalsY + 26, pageWidth - 16, totalsY + 26);
+    doc.setLineWidth(0.2);
+    doc.line(totalsBoxX, totalsY + 27, pageWidth - 16, totalsY + 27);
+  } else {
+    doc.setDrawColor(COLORS.BORDER);
+    doc.setLineWidth(0.2);
+    doc.line(totalsBoxX, totalsY + 10, pageWidth - 16, totalsY + 10);
+
+    doc.setFont(FONTS.BOLD, 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(COLORS.MAROON);
+    doc.text('Estimated Total:', totalsBoxX + 2, totalsY + 16);
+    doc.text(`Rs ${formatMoney(subtotal)}`, pageWidth - 16, totalsY + 16, { align: 'right' });
+
+    doc.setDrawColor(COLORS.MAROON);
+    doc.setLineWidth(0.5);
+    doc.line(totalsBoxX, totalsY + 20, pageWidth - 16, totalsY + 20);
+    doc.setLineWidth(0.2);
+    doc.line(totalsBoxX, totalsY + 21, pageWidth - 16, totalsY + 21);
+  }
+
+  let dynamicY = totalsY + (isQuotation ? 26 : 32);
+
+  if (isQuotation && params.terms) {
+    doc.setFont(FONTS.BOLD, 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(COLORS.MAROON);
+    doc.text('TERMS & CONDITIONS:', 16, dynamicY);
+
+    doc.setFont(FONTS.BODY, 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(COLORS.TEXT);
+    const termsLines = doc.splitTextToSize(params.terms, pageWidth - 110);
+    doc.text(termsLines, 16, dynamicY + 5);
+    
+    dynamicY += 10 + (termsLines.length * 4);
+  }
+
+  if (params.notes) {
+    doc.setFont(FONTS.BOLD, 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(COLORS.TEXT);
+    doc.text('ADDITIONAL NOTES:', 16, dynamicY);
+
+    doc.setFont(FONTS.BODY, 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(COLORS.TEXT);
+    const noteLines = doc.splitTextToSize(params.notes, pageWidth - 110);
+    doc.text(noteLines, 16, dynamicY + 5);
+    
+    dynamicY += 10 + (noteLines.length * 4);
+  }
+  
+  let signatureY = Math.max(totalsY + 50, dynamicY + 15);
+
+  if (stampData) {
+    try { doc.addImage(stampData, 'PNG', 65, signatureY - 26, 50, 45); } catch (e) {}
+  }
+
+  if (signatureData) {
+    try { doc.addImage(signatureData, 'PNG', 16, signatureY - 12, 45, 22); } catch (e) {}
+  }
+
+  doc.setFont(FONTS.BOLD, 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(COLORS.TEXT);
+  doc.text('Authorized Signature', 16, signatureY + 18);
+
+  doc.setFont(FONTS.BODY, 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(COLORS.TEXT);
+  doc.text('Agha Zulfiqar Ahmed', 16, signatureY + 23);
+
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    addFooter(doc, i);
+  }
+
+  return doc;
+}
+
+export async function viewInvoicePdf(params: Parameters<typeof renderInvoicePdf>[0]) {
+  try {
+    const doc = await renderInvoicePdf(params);
+    const blob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(blob);
+    const viewWindow = window.open(blobUrl, '_blank');
+    if (!viewWindow) alert("Your browser blocked the preview window. Please allow pop-ups for localhost.");
+  } catch (error) {
+    console.error("PDF Preview Error:", error);
+    alert("Failed to open the preview window.");
+  }
+}
+
+export async function downloadInvoicePdf(params: Parameters<typeof renderInvoicePdf>[0]) {
+  try {
+    const doc = await renderInvoicePdf(params);
+    doc.save(`${params.invoice?.invoiceNumber ?? params.invoiceNumber}.pdf`);
+  } catch (error) {
+    console.error("PDF Generation Error:", error);
+    alert("Failed to download the PDF. Check console for details.");
+  }
+}
+
+export async function printInvoicePdf(params: Parameters<typeof renderInvoicePdf>[0]) {
+  try {
+    const doc = await renderInvoicePdf(params);
+    doc.autoPrint();
+
+    const blob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(blob);
+
+    const printWindow = window.open(blobUrl, '_blank');
+    if (!printWindow) alert("Your browser blocked the print window. Please allow pop-ups for localhost.");
+  } catch (error) {
+    console.error("PDF Print Error:", error);
+    alert("Failed to open the print window.");
+  }
+}
+
+export default null;
