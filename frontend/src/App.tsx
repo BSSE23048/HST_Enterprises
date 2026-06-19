@@ -40,6 +40,13 @@ const defaultTerms = "1. Validity: This quotation is valid for 15 days.\n2. Paym
 
 function money(value: any) { return (Number(value) || 0).toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
 function todayIso() { return new Date().toISOString().slice(0, 10); }
+
+// HELPER: Convert YYYY-MM-DD to DD-MM-YYYY for display
+function formatDisplayDate(isoDate: string) {
+  if (!isoDate) return 'No Date';
+  return isoDate.split('-').reverse().join('-');
+}
+
 function blankLine(): InvoiceItem { return { description: '', unit: 'Nos', quantity: 1, unitPrice: 0, productId: null } as any; }
 
 function getStatusColor(status: string, recordType: string = 'invoice') {
@@ -137,7 +144,6 @@ export default function App() {
   const balanceDue = useMemo(() => Math.max(0, subtotal - Number(invoiceDraft.amountPaid || 0)), [subtotal, invoiceDraft.amountPaid]);
   const currentClient = clients.find((client) => String(client.id) === String(invoiceDraft.clientId));
 
-  // --- ERP FEATURE: CLIENT LEDGER STATS ---
   const clientStats = useMemo(() => {
     const stats: Record<string, { billed: number, paid: number, balance: number }> = {};
     clients.forEach(c => { stats[String(c.id)] = { billed: 0, paid: 0, balance: 0 }; });
@@ -154,7 +160,6 @@ export default function App() {
     return stats;
   }, [clients, invoices]);
 
-  // --- REFINED DASHBOARD ANALYTICS ---
   const { totalRevenue, totalCollected, totalPendingReceivables, currentMonthRevenue, monthlyChartData } = useMemo(() => {
     let total = 0; let collected = 0; let pending = 0; let currentMonthTotal = 0;
     const currentMonthPrefix = todayIso().substring(0, 7); 
@@ -254,11 +259,16 @@ export default function App() {
          else if (Number(invoiceDraft.amountPaid) > 0) finalStatus = 'partial';
       }
 
+      // --- SMART SEQUENCE EXTRACTOR ---
+      // If user manually changed "QT-005" to "QT-022", we extract "22" to save to database!
+      const seqMatch = invoiceDraft.invoiceNumber.match(/(\d+)$/);
+      const finalSequence = seqMatch ? parseInt(seqMatch[1], 10) : (invoiceDraft.invoiceSequence === '' ? 0 : Number(invoiceDraft.invoiceSequence));
+
       const client = clients.find(c => String(c.id) === String(invoiceDraft.clientId));
       const payload: any = { 
         ...invoiceDraft, clientId: String(invoiceDraft.clientId), clientName: client?.displayName || "Unknown", clientCode: client?.clientCode || "INV",
         subtotal: calcTotal, grandTotal: calcTotal, status: finalStatus, amountPaid: Number(invoiceDraft.amountPaid || 0), balanceDue: calcBalance,
-        itemCount: invoiceDraft.items.length, invoiceSequence: invoiceDraft.invoiceSequence === '' ? '' : Number(invoiceDraft.invoiceSequence), 
+        itemCount: invoiceDraft.items.length, invoiceSequence: finalSequence, 
         items: invoiceDraft.items.map((i: any) => ({ productId: i.productId || null, description: i.description || "", quantity: Number(i.quantity || 1), unitPrice: Number(i.unitPrice || 0), unit: i.unit || 'Nos' })) 
       };
       
@@ -300,7 +310,6 @@ export default function App() {
     } catch (e: any) { notify('Error during conversion process.', 'error'); }
   }
 
-  // --- FAST TOGGLE PAYMENT ---
   async function togglePaymentStatus(invoice: Invoice) {
     setBusy(true);
     try {
@@ -319,18 +328,19 @@ export default function App() {
     finally { setBusy(false); }
   }
 
-  // --- ULTIMATE WHATSAPP & PDF WORKFLOW ---
   async function shareOnWhatsApp(invoice: Invoice) {
     setBusy(true);
     try {
       const response = await loadInvoice(invoice.id);
       const detail = response.data as any;
       const client = clients.find(c => String(c.id) === String(detail.clientId));
-      
+
       notify('Step 1: Downloading PDF...', 'info');
+      // Pass the specially formatted DD-MM-YYYY date to PDF generator!
       await downloadInvoicePdf({ 
         client: client || null, invoice: detail, draftItems: detail.items || [], 
-        invoiceNumber: detail.invoiceNumber || 'DRAFT', invoiceDate: detail.invoiceDate, 
+        invoiceNumber: detail.invoiceNumber || 'DRAFT', 
+        invoiceDate: formatDisplayDate(detail.invoiceDate), 
         notes: detail.notes || '', recordType: detail.recordType || 'invoice', terms: detail.terms || '' 
       });
 
@@ -339,7 +349,7 @@ export default function App() {
       phone = phone.replace(/[^0-9]/g, '');
 
       const typeLabel = detail.recordType === 'quotation' ? 'Quotation' : 'Invoice';
-      let text = `*HST ENTERPRISES*\n\nHello *${detail.clientName}*,\n\nHere are the details for your recent ${typeLabel}:\n\n*${typeLabel.toUpperCase()} NO:* ${detail.invoiceNumber}\n*DATE:* ${detail.invoiceDate}\n*GRAND TOTAL:* Rs ${money(detail.grandTotal)}\n`;
+      let text = `*HST ENTERPRISES*\n\nHello *${detail.clientName}*,\n\nHere are the details for your recent ${typeLabel}:\n\n*${typeLabel.toUpperCase()} NO:* ${detail.invoiceNumber}\n*DATE:* ${formatDisplayDate(detail.invoiceDate)}\n*GRAND TOTAL:* Rs ${money(detail.grandTotal)}\n`;
       
       if (detail.recordType !== 'quotation') {
         text += `*BALANCE DUE:* Rs ${money(detail.balanceDue !== undefined ? detail.balanceDue : detail.grandTotal)}\n`;
@@ -374,7 +384,18 @@ export default function App() {
         finalDoc = res.data as any;
       }
       const client = clients.find(c => String(c.id) === String(finalDoc.clientId)) || null;
-      const params = { client: client, invoice: finalDoc as any, draftItems: finalDoc.items || [], invoiceNumber: finalDoc.invoiceNumber || 'DRAFT', invoiceDate: finalDoc.invoiceDate, notes: finalDoc.notes || '', recordType: finalDoc.recordType || 'invoice', terms: finalDoc.terms || '' };
+      
+      // Formatting date before sending to PDF generator
+      const params = { 
+        client: client, 
+        invoice: finalDoc as any, 
+        draftItems: finalDoc.items || [], 
+        invoiceNumber: finalDoc.invoiceNumber || 'DRAFT', 
+        invoiceDate: formatDisplayDate(finalDoc.invoiceDate), 
+        notes: finalDoc.notes || '', 
+        recordType: finalDoc.recordType || 'invoice', 
+        terms: finalDoc.terms || '' 
+      };
       
       if (action === 'view') await viewInvoicePdf(params as any); 
       else await downloadInvoicePdf(params as any);
@@ -726,8 +747,9 @@ export default function App() {
                      <input className="w-full rounded-2xl border-2 border-slate-200 bg-white px-5 py-3.5 text-sm font-black text-[#790E13] outline-none focus:border-[#232361] transition-colors shadow-sm" value={invoiceDraft.invoiceNumber} onChange={e => setInvoiceDraft(c => ({ ...c, invoiceNumber: e.target.value }))} placeholder="Auto-generated..." />
                    </div>
                    <div>
-                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 pl-1">Issue Date</label>
+                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 pl-1">Issue Date (YYYY-MM-DD)</label>
                      <input className="w-full rounded-2xl border-2 border-slate-200 bg-white px-5 py-3.5 text-sm font-bold outline-none focus:border-[#232361] transition-colors shadow-sm" type="date" value={invoiceDraft.invoiceDate} onChange={e => setInvoiceDraft(c => ({ ...c, invoiceDate: e.target.value }))} />
+                     <p className="text-[10px] font-bold text-slate-400 ml-1 mt-1">Calendar requires this format, but PDFs will show DD-MM-YYYY</p>
                    </div>
                  </div>
               </div>
@@ -754,7 +776,7 @@ export default function App() {
                       </div>
                       <div className="flex gap-2">
                          <select className="w-24 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white px-3 py-3.5 text-sm font-black text-slate-600 outline-none focus:border-[#232361] transition-colors" value={item.unit || 'Nos'} onChange={e => updateItem(index, { unit: e.target.value })}>
-                           <option value="Nos">Nos</option><option value="Meter">Meter</option><option value="Length">Length</option><option value="Coil">Coil</option><option value="Pkt">Pkt</option><option value="Job">Job</option>
+                           <option value="Nos">Nos</option><option value="Meter">Meter</option><option value="Length">Length</option><option value="Coil">Coil</option><option value="Pkt">Pkt</option><option value="Ft">Ft</option>
                          </select>
                          <input className="w-24 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white px-4 py-3.5 text-sm font-black outline-none text-center focus:border-[#232361] transition-colors" type="number" min="0.01" step="0.01" value={item.quantity} onChange={e => updateItem(index, { quantity: Number(e.target.value) })} placeholder="Qty" />
                          <input className="w-32 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white px-4 py-3.5 text-sm font-black outline-none text-right focus:border-[#232361] transition-colors" type="number" min="0" step="0.01" value={item.unitPrice} onChange={e => updateItem(index, { unitPrice: Number(e.target.value) })} placeholder="Rate" />
@@ -862,7 +884,7 @@ export default function App() {
                           {invoice.invoiceNumber || 'DRAFT'}
                         </span>
                         <h3 className="mt-3 text-xl font-black text-[#232361] line-clamp-1">{invoice.clientName || 'Unknown Client'}</h3>
-                        <p className="text-xs text-slate-500 font-bold mt-1 tracking-wide">{(invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}) : 'No Date')} • {invoice.itemCount || invoice.items?.length || 0} Line Items</p>
+                        <p className="text-xs text-slate-500 font-bold mt-1 tracking-wide">{formatDisplayDate(invoice.invoiceDate)} • {invoice.itemCount || invoice.items?.length || 0} Line Items</p>
                       </div>
                     </div>
                     

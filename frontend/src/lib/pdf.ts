@@ -22,6 +22,17 @@ function formatMoney(value: number): string {
   return value.toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
+// --- NEW HELPER: ENFORCE DD-MM-YYYY STRICTLY IN PDF ---
+function formatPdfDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  // If date is in YYYY-MM-DD format, convert it to DD-MM-YYYY
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return dateStr;
+}
+
 async function loadImageAsDataURL(path: string): Promise<string | null> {
   try {
     const res = await fetch(path);
@@ -133,7 +144,6 @@ export async function renderInvoicePdf(params: {
     try { doc.addImage(logoData, 'PNG', 16, 12, 30, 20); } catch (e) {}
   }
 
-  // --- OVERLAP FIX: Adjusted X position and font sizes ---
   const textStartX = 48; 
   
   doc.setFont(FONTS.BOLD, 'bold');
@@ -147,7 +157,7 @@ export async function renderInvoicePdf(params: {
   doc.text('Importer, General Order Supplier, Contractor & Services', textStartX, 27);
 
   doc.setFont(FONTS.BOLD, 'bold');
-  doc.setFontSize(22); // Reduced from 28 so QUOTATION perfectly fits
+  doc.setFontSize(22); 
   doc.setTextColor(isQuotation ? COLORS.MAROON : COLORS.BLUE);
   doc.text(isQuotation ? 'QUOTATION' : 'INVOICE', pageWidth - 16, 21, { align: 'right' }); 
 
@@ -182,7 +192,11 @@ export async function renderInvoicePdf(params: {
   
   doc.setFontSize(11);
   doc.setTextColor(COLORS.TEXT);
-  doc.text(`${params.invoice?.invoiceDate ?? params.invoiceDate}`, metaValueX, currentY, { align: 'right' });
+  
+  // THE FIX: Format the date string right here before printing
+  const rawDate = params.invoiceDate || params.invoice?.invoiceDate || '';
+  const finalDisplayDate = formatPdfDate(rawDate);
+  doc.text(finalDisplayDate, metaValueX, currentY, { align: 'right' });
 
   currentY += 6;
 
