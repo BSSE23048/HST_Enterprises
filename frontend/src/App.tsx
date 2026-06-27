@@ -776,7 +776,7 @@ export default function App() {
                       </div>
                       <div className="flex gap-2">
                          <select className="w-24 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white px-3 py-3.5 text-sm font-black text-slate-600 outline-none focus:border-[#232361] transition-colors" value={item.unit || 'Nos'} onChange={e => updateItem(index, { unit: e.target.value })}>
-                           <option value="Nos">Nos</option><option value="Meter">Meter</option><option value="Length">Length</option><option value="Coil">Coil</option><option value="Pkt">Pkt</option><option value="Ft">Ft</option>
+                           <option value="Nos">Nos</option><option value="Meter">Meter</option><option value="Yard">Yard</option><option value="Length">Length</option><option value="Coil">Coil</option><option value="Pkt">Pkt</option><option value="Ft">Ft</option>
                          </select>
                          <input className="w-24 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white px-4 py-3.5 text-sm font-black outline-none text-center focus:border-[#232361] transition-colors" type="number" min="0.01" step="0.01" value={item.quantity} onChange={e => updateItem(index, { quantity: Number(e.target.value) })} placeholder="Qty" />
                          <input className="w-32 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white px-4 py-3.5 text-sm font-black outline-none text-right focus:border-[#232361] transition-colors" type="number" min="0" step="0.01" value={item.unitPrice} onChange={e => updateItem(index, { unitPrice: Number(e.target.value) })} placeholder="Rate" />
