@@ -1,0 +1,342 @@
+[
+  {
+    "sourceLine": 1,
+    "productName": "PVC Tape (Red, Yellow, Black, Blue)",
+    "unit": "Nos",
+    "defaultPrice": 65,
+    "sourceQuantity": 144,
+    "sourceAmount": 9360,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 2,
+    "productName": "Cable Ties 150 mm",
+    "unit": "Pkt",
+    "defaultPrice": 220,
+    "sourceQuantity": 4,
+    "sourceAmount": 880,
+    "description": "Unit: Pkt. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 3,
+    "productName": "Cable Ties 200 mm",
+    "unit": "Pkt",
+    "defaultPrice": 300,
+    "sourceQuantity": 4,
+    "sourceAmount": 1200,
+    "description": "Unit: Pkt. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 4,
+    "productName": "Cable Tie 300 mm",
+    "unit": "Pkt",
+    "defaultPrice": 450,
+    "sourceQuantity": 6,
+    "sourceAmount": 2700,
+    "description": "Unit: Pkt. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 5,
+    "productName": "Timble Lug & Shroud 1.5mm (100)",
+    "unit": "Pkt",
+    "defaultPrice": 400,
+    "sourceQuantity": 2,
+    "sourceAmount": 800,
+    "description": "Unit: Pkt. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 6,
+    "productName": "Timble Lug & Shroud 2.5mm (100)",
+    "unit": "Pkt",
+    "defaultPrice": 500,
+    "sourceQuantity": 2,
+    "sourceAmount": 1000,
+    "description": "Unit: Pkt. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 7,
+    "productName": "Timble Lug & Shroud 4mm (100)",
+    "unit": "Pkt",
+    "defaultPrice": 750,
+    "sourceQuantity": 2,
+    "sourceAmount": 1500,
+    "description": "Unit: Pkt. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 8,
+    "productName": "Timble Lug & Shroud 6mm (per piece)",
+    "unit": "Nos",
+    "defaultPrice": 11,
+    "sourceQuantity": 100,
+    "sourceAmount": 1100,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 9,
+    "productName": "Timble Lug & Shroud 10mm (per piece)",
+    "unit": "Nos",
+    "defaultPrice": 21,
+    "sourceQuantity": 100,
+    "sourceAmount": 2100,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 10,
+    "productName": "Timble Lug & Shroud 16mm (per piece)",
+    "unit": "Nos",
+    "defaultPrice": 30,
+    "sourceQuantity": 100,
+    "sourceAmount": 3000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 11,
+    "productName": "Timble Lug & Shroud 25mm (per piece)",
+    "unit": "Nos",
+    "defaultPrice": 40,
+    "sourceQuantity": 100,
+    "sourceAmount": 4000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 12,
+    "productName": "Timble Lug & Shroud 35mm (per piece)",
+    "unit": "Nos",
+    "defaultPrice": 50,
+    "sourceQuantity": 100,
+    "sourceAmount": 5000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 13,
+    "productName": "Timble Lug & Shroud 70mm (per piece)",
+    "unit": "Nos",
+    "defaultPrice": 90,
+    "sourceQuantity": 100,
+    "sourceAmount": 9000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 14,
+    "productName": "1.5 mm Cable (Red, Yellow, Blue, Black) COPPERGAT",
+    "unit": "Coil",
+    "defaultPrice": 7250,
+    "sourceQuantity": 50,
+    "sourceAmount": 362500,
+    "description": "Unit: Coil. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 15,
+    "productName": "Cable Black 2.5 mm 7/29 (90 Mtr) COPPERGAT",
+    "unit": "Coil",
+    "defaultPrice": 12500,
+    "sourceQuantity": 5,
+    "sourceAmount": 62500,
+    "description": "Unit: Coil. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 16,
+    "productName": "Heat Shrink Sleeve Wrap Tube - Polyolefin (for 50sqmm Cable)",
+    "unit": "Meter",
+    "defaultPrice": 150,
+    "sourceQuantity": 12,
+    "sourceAmount": 1800,
+    "description": "Unit: Meter. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 17,
+    "productName": "Heat Shrink Sleeve Wrap Tube - Polyolefin (for 120sqmm Cable)",
+    "unit": "Meter",
+    "defaultPrice": 275,
+    "sourceQuantity": 12,
+    "sourceAmount": 3300,
+    "description": "Unit: Meter. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 18,
+    "productName": "Heat Shrink Sleeve Wrap Tube - Polyolefin (for 300sqmm Cable)",
+    "unit": "Meter",
+    "defaultPrice": 350,
+    "sourceQuantity": 12,
+    "sourceAmount": 4200,
+    "description": "Unit: Meter. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 19,
+    "productName": "DB Selector Switch",
+    "unit": "Nos",
+    "defaultPrice": 750,
+    "sourceQuantity": 6,
+    "sourceAmount": 4500,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 20,
+    "productName": "Selector Switch 32 Amp 3 Pole",
+    "unit": "Nos",
+    "defaultPrice": 1200,
+    "sourceQuantity": 3,
+    "sourceAmount": 3600,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 21,
+    "productName": "Selector Switch 50 Amp 3 Pole",
+    "unit": "Nos",
+    "defaultPrice": 2000,
+    "sourceQuantity": 3,
+    "sourceAmount": 6000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 22,
+    "productName": "Selector Switch 75 Amp 3 Pole",
+    "unit": "Nos",
+    "defaultPrice": 3200,
+    "sourceQuantity": 3,
+    "sourceAmount": 9600,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 23,
+    "productName": "Flexible Pipe white 1\"",
+    "unit": "Ft",
+    "defaultPrice": 55,
+    "sourceQuantity": 1,
+    "sourceAmount": 55,
+    "description": "Unit: Ft. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 24,
+    "productName": "Magnetic Contractor 25 Amp SCHNEIDER",
+    "unit": "Nos",
+    "defaultPrice": 3500,
+    "sourceQuantity": 2,
+    "sourceAmount": 7000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 25,
+    "productName": "Magnetic Contractor 32 Amp SCHNEIDER",
+    "unit": "Nos",
+    "defaultPrice": 4500,
+    "sourceQuantity": 2,
+    "sourceAmount": 9000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 26,
+    "productName": "Phase Sequence Relay",
+    "unit": "Nos",
+    "defaultPrice": 8000,
+    "sourceQuantity": 2,
+    "sourceAmount": 16000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 27,
+    "productName": "Overload Relay EOCR SS 0.5-6A (SCHNEIDER)",
+    "unit": "Nos",
+    "defaultPrice": 3000,
+    "sourceQuantity": 1,
+    "sourceAmount": 3000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 28,
+    "productName": "Overload Relay EOCR SS 6-60A (SCHNEIDER)",
+    "unit": "Nos",
+    "defaultPrice": 3000,
+    "sourceQuantity": 1,
+    "sourceAmount": 3000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 29,
+    "productName": "Timer FUJI Super timer 8PIN 100VAC-240VAC ST3P",
+    "unit": "Nos",
+    "defaultPrice": 2800,
+    "sourceQuantity": 1,
+    "sourceAmount": 2800,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 30,
+    "productName": "Timer FUJI Super timer 0-60sec AH31C 240VAC",
+    "unit": "Nos",
+    "defaultPrice": 1500,
+    "sourceQuantity": 1,
+    "sourceAmount": 1500,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 31,
+    "productName": "Phase Sequence Relay Schnieder RM22/RM35",
+    "unit": "Nos",
+    "defaultPrice": 14300,
+    "sourceQuantity": 1,
+    "sourceAmount": 14300,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 32,
+    "productName": "Phase Sequence Relay ZAHRA RST25",
+    "unit": "Nos",
+    "defaultPrice": 4000,
+    "sourceQuantity": 1,
+    "sourceAmount": 4000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 33,
+    "productName": "Voltage Control Relay SCHNEIDER RM22 TR33",
+    "unit": "Nos",
+    "defaultPrice": 16250,
+    "sourceQuantity": 1,
+    "sourceAmount": 16250,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  },
+  {
+    "sourceLine": 34,
+    "productName": "12V DC, 10A Power supply",
+    "unit": "Nos",
+    "defaultPrice": 22000,
+    "sourceQuantity": 5,
+    "sourceAmount": 110000,
+    "description": "Unit: Nos. Source: quotation QT-PS-001 dated 03-09-2026. Price in PKR, exclusive of GST.",
+    "isActive": true
+  }
+]

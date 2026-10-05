@@ -1,0 +1,6 @@
+python-libs/
+products-source.txt
+products-backup-*.json
+import-result.json
+catalogue-audit/
+deploy-build/

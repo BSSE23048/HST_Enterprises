@@ -75,6 +75,14 @@ export async function renderInvoicePdf(params: {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
+  const footerY = pageHeight - 30;
+  const contentBottom = footerY - 5;
+  const continuationTop = 20;
+  const ensureSpace = (y: number, height: number) => {
+    if (y + height <= contentBottom) return y;
+    doc.addPage();
+    return continuationTop;
+  };
 
   const isQuotation = params.recordType === 'quotation';
 
@@ -89,7 +97,6 @@ export async function renderInvoicePdf(params: {
   const signatureData = await loadImageAsDataURL('/Authorized_sign.png');
 
   const addFooter = (docInstance: jsPDF, pageNum: number) => {
-    const footerY = pageHeight - 30; 
     docInstance.setPage(pageNum);
 
     docInstance.setDrawColor(COLORS.BORDER);
@@ -219,7 +226,6 @@ export async function renderInvoicePdf(params: {
     startY: currentY,
     margin: { left: 16, right: 16, bottom: 45 },
     pageBreak: 'auto',
-    didDrawPage: () => { addFooter(doc, doc.getNumberOfPages()); },
     head: [['Sr', 'Description', 'Unit', 'Qty', 'Rate', 'Amount']],
     body: lines.map((item, idx) => [
       String(item.lineNo ?? idx + 1).padStart(2, '0'),
@@ -239,7 +245,7 @@ export async function renderInvoicePdf(params: {
   const lastPage = doc.getNumberOfPages();
   doc.setPage(lastPage);
 
-  const totalsY = finalY + 8;
+  const totalsY = ensureSpace(finalY + 8, isQuotation ? 21 : 27);
   const totalsBoxX = pageWidth - 90;
   
   if (!isQuotation) {
@@ -302,55 +308,63 @@ export async function renderInvoicePdf(params: {
 
   let dynamicY = totalsY + (isQuotation ? 26 : 32);
 
-  if (isQuotation && params.terms) {
+  // Paginate wrapped text before drawing it, keeping each heading with a line.
+  const drawTextSection = (heading: string, text: string, fontSize: number, color: string) => {
+    doc.setFont(FONTS.BODY, 'normal');
+    doc.setFontSize(8.5);
+    const textLines: string[] = doc.splitTextToSize(text, pageWidth - 110);
+    dynamicY = ensureSpace(dynamicY, 10);
     doc.setFont(FONTS.BOLD, 'bold');
-    doc.setFontSize(10);
-    doc.setTextColor(COLORS.MAROON);
-    doc.text('TERMS & CONDITIONS:', 16, dynamicY);
-
+    doc.setFontSize(fontSize);
+    doc.setTextColor(color);
+    doc.text(heading, 16, dynamicY);
+    dynamicY += 5;
     doc.setFont(FONTS.BODY, 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(COLORS.TEXT);
-    const termsLines = doc.splitTextToSize(params.terms, pageWidth - 110);
-    doc.text(termsLines, 16, dynamicY + 5);
-    
-    dynamicY += 10 + (termsLines.length * 4);
+    for (const line of textLines) {
+      dynamicY = ensureSpace(dynamicY, 4);
+      doc.text(line, 16, dynamicY);
+      dynamicY += 4;
+    }
+    dynamicY += 5;
+  };
+
+  if (isQuotation && params.terms) {
+    drawTextSection('TERMS & CONDITIONS:', params.terms, 10, COLORS.MAROON);
   }
 
   if (params.notes) {
-    doc.setFont(FONTS.BOLD, 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(COLORS.TEXT);
-    doc.text('ADDITIONAL NOTES:', 16, dynamicY);
-
-    doc.setFont(FONTS.BODY, 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(COLORS.TEXT);
-    const noteLines = doc.splitTextToSize(params.notes, pageWidth - 110);
-    doc.text(noteLines, 16, dynamicY + 5);
-    
-    dynamicY += 10 + (noteLines.length * 4);
+    drawTextSection('ADDITIONAL NOTES:', params.notes, 9, COLORS.TEXT);
   }
   
-  let signatureY = Math.max(totalsY + 50, dynamicY + 15);
+  // Text sections already include trailing space. Start 4 mm after their
+  // final baseline instead of counting that space twice.
+  const hasTextSection = Boolean((isQuotation && params.terms) || params.notes);
+  const preferredTop = dynamicY + (hasTextSection ? -5 : 5);
+  const availableHeight = contentBottom - preferredTop;
+  // Use a readable compact arrangement before adding a page solely for signing.
+  // Both layouts include the images, labels and text descenders in their bounds.
+  const compactSignature = availableHeight < 51 && availableHeight >= 30;
+  const signatureTop = ensureSpace(preferredTop, compactSignature ? 30 : 51);
 
   if (stampData) {
-    try { doc.addImage(stampData, 'PNG', 65, signatureY - 26, 50, 45); } catch (e) {}
+    try { doc.addImage(stampData, 'PNG', 65, signatureTop, compactSignature ? 100 / 3 : 50, compactSignature ? 30 : 45); } catch (e) {}
   }
 
   if (signatureData) {
-    try { doc.addImage(signatureData, 'PNG', 16, signatureY - 12, 45, 22); } catch (e) {}
+    try { doc.addImage(signatureData, 'PNG', 16, signatureTop + (compactSignature ? 2 : 14), compactSignature ? 36 : 45, compactSignature ? 17.6 : 22); } catch (e) {}
   }
 
   doc.setFont(FONTS.BOLD, 'bold');
   doc.setFontSize(10);
   doc.setTextColor(COLORS.TEXT);
-  doc.text('Authorized Signature', 16, signatureY + 18);
+  doc.text('Authorized Signature', 16, signatureTop + (compactSignature ? 23 : 44));
 
   doc.setFont(FONTS.BODY, 'normal');
   doc.setFontSize(9);
   doc.setTextColor(COLORS.TEXT);
-  doc.text('Agha Zulfiqar Ahmed', 16, signatureY + 23);
+  doc.text('Agha Zulfiqar Ahmed', 16, signatureTop + (compactSignature ? 28 : 49));
 
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {

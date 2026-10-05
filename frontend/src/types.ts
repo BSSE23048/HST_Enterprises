@@ -18,6 +18,7 @@ export type Product = {
   productName: string;
   description?: string;
   defaultPrice: number;
+  unit?: string;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;

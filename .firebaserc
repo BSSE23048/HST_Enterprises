@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "hst-enterprises"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }
