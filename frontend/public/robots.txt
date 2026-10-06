@@ -1,0 +1,24 @@
+# HST Enterprises (hstenterprisespk.com) Security & Crawler Directives
+User-agent: *
+Allow: /
+Allow: /company/
+Allow: /#projects
+Allow: /#expertise
+Allow: /#about
+Allow: /#industries
+Allow: /#contact
+
+# Block Private ERP, Internal Dashboards & Admin Paths
+Disallow: /portal
+Disallow: /portal/
+Disallow: /portal/*
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /api/
+Disallow: /privateAssets/
+Disallow: /maintenance/
+Disallow: /*.json$
+
+Sitemap: https://hstenterprisespk.com/sitemap.xml
+Sitemap: https://hst-enterprises.web.app/sitemap.xml

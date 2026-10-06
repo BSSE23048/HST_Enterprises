@@ -5,17 +5,14 @@ import type { Client, Invoice, InvoiceItem } from '../types';
 const COLORS = {
   MAROON: 'rgb(121, 14, 19)', 
   BLUE: '#232361',   
-  LIGHT_BG: '#f9f9f9',
   BORDER: '#b0b0b0', 
   TEXT: '#000000',   
-  SUBTEXT: '#000000',
   MUTED: '#000000'   
 };
 
 const FONTS = {
-  HEADER: 'Helvetica',
   BODY: 'Helvetica',
-  BOLD: 'Helvetica-Bold'
+  BOLD: 'Helvetica'
 };
 
 function formatMoney(value: number): string {
@@ -71,6 +68,7 @@ export async function renderInvoicePdf(params: {
   notes?: string;
   recordType?: 'invoice' | 'quotation';
   terms?: string;
+  signingAssets?: { signature: string; stamp: string };
 }) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -93,8 +91,9 @@ export async function renderInvoicePdf(params: {
   const balanceDue = params.invoice?.balanceDue !== undefined ? params.invoice.balanceDue : subtotal;
 
   const logoData = await loadImageAsDataURL('/HST_logo.png');
-  const stampData = await loadImageAsDataURL('/HST_Stamp.png');
-  const signatureData = await loadImageAsDataURL('/Authorized_sign.png');
+  const assets = params.signingAssets ?? await (await import('./privateAssets')).loadSigningAssets();
+  const stampData = assets.stamp;
+  const signatureData = assets.signature;
 
   const addFooter = (docInstance: jsPDF, pageNum: number) => {
     docInstance.setPage(pageNum);
@@ -380,7 +379,9 @@ export async function viewInvoicePdf(params: Parameters<typeof renderInvoicePdf>
     const blob = doc.output('blob');
     const blobUrl = URL.createObjectURL(blob);
     const viewWindow = window.open(blobUrl, '_blank');
-    if (!viewWindow) alert("Your browser blocked the preview window. Please allow pop-ups for localhost.");
+    if (viewWindow) viewWindow.opener = null;
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    if (!viewWindow) alert("Your browser blocked the preview window. Please allow pop-ups for this site.");
   } catch (error) {
     console.error("PDF Preview Error:", error);
     alert("Failed to open the preview window.");
@@ -390,27 +391,11 @@ export async function viewInvoicePdf(params: Parameters<typeof renderInvoicePdf>
 export async function downloadInvoicePdf(params: Parameters<typeof renderInvoicePdf>[0]) {
   try {
     const doc = await renderInvoicePdf(params);
-    doc.save(`${params.invoice?.invoiceNumber ?? params.invoiceNumber}.pdf`);
+    const filename = (params.invoice?.invoiceNumber ?? params.invoiceNumber).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 100) || 'HST-document';
+    doc.save(`${filename}.pdf`);
   } catch (error) {
     console.error("PDF Generation Error:", error);
     alert("Failed to download the PDF. Check console for details.");
   }
 }
 
-export async function printInvoicePdf(params: Parameters<typeof renderInvoicePdf>[0]) {
-  try {
-    const doc = await renderInvoicePdf(params);
-    doc.autoPrint();
-
-    const blob = doc.output('blob');
-    const blobUrl = URL.createObjectURL(blob);
-
-    const printWindow = window.open(blobUrl, '_blank');
-    if (!printWindow) alert("Your browser blocked the print window. Please allow pop-ups for localhost.");
-  } catch (error) {
-    console.error("PDF Print Error:", error);
-    alert("Failed to open the print window.");
-  }
-}
-
-export default null;

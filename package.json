@@ -1,21 +1,12 @@
 {
-  "name": "hst-enterprises-local-invoice-system",
+  "name": "hst-enterprises",
   "private": true,
   "workspaces": [
-    "backend",
     "frontend"
   ],
   "scripts": {
-    "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
-    "dev:api": "npm run dev --workspace backend",
-    "dev:web": "npm run dev --workspace frontend",
-    "build": "npm run build --workspace backend && npm run build --workspace frontend",
-    "db:init": "node scripts/init-db.js"
-  },
-  "devDependencies": {
-    "concurrently": "^9.0.1"
-  },
-  "dependencies": {
-    "firebase": "^12.14.0"
+    "dev": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "typecheck": "npm run typecheck --workspace frontend"
   }
 }

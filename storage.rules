@@ -1,0 +1,8 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // No Storage bucket or upload feature is used by this app.
+    // Provisioning one requires an explicit, reviewed policy before use.
+    match /{path=**} { allow read, write: if false; }
+  }
+}

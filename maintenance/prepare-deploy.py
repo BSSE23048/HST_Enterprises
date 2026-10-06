@@ -23,6 +23,5 @@ for source in files:
         data = subprocess.check_output(['git', 'show', f'HEAD:{relative.as_posix()}'], cwd=root)
     destination.write_bytes(data)
 package = json.loads((root / 'frontend' / 'package.json').read_text())
-package['dependencies']['firebase'] = json.loads((root / 'package.json').read_text())['dependencies']['firebase']
 (target / 'package.json').write_text(json.dumps(package, indent=2))
 print(f'Prepared isolated build at {target}')

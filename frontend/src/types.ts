@@ -44,6 +44,7 @@ export type Invoice = {
   invoiceDate: string;
   
   documentType?: 'invoice' | 'quotation'; // NEW: Identifies quote vs invoice
+  recordType?: 'invoice' | 'quotation';
   terms?: string; // NEW: Terms and conditions for quotes
   
   status: 'draft' | 'sent' | 'partial' | 'paid' | 'overdue' | 'cancelled';
@@ -66,8 +67,9 @@ export type InvoiceDraft = {
   invoiceSequence: string | number;
   invoiceDate: string;
   
-  documentType: 'invoice' | 'quotation'; // NEW
-  terms: string; // NEW
+  documentType?: 'invoice' | 'quotation';
+  recordType: 'invoice' | 'quotation';
+  terms?: string;
   
   status: 'draft' | 'sent' | 'partial' | 'paid' | 'overdue' | 'cancelled';
   amountPaid: number;

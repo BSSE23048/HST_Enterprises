@@ -1,0 +1,62 @@
+const {chromium} = require('./deploy-build/node_modules/playwright');
+const AxeBuilder = require('./deploy-build/node_modules/@axe-core/playwright').default;
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const out=path.join(__dirname,'corporate-review'); fs.mkdirSync(out,{recursive:true});
+(async()=>{
+  const browser=await chromium.launch({channel:'msedge',headless:true});
+  const results=[];
+  for(const width of [320,390,768,1024,1440,1920]) {
+    const context=await browser.newContext({viewport:{width,height:width<768?844:1000},reducedMotion:'reduce'});
+    const page=await context.newPage(); const errors=[]; const requests=[];
+    page.on('pageerror',error=>errors.push(error.message));
+    page.on('request',request=>requests.push(request.url()));
+    await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+    await page.getByRole('heading',{level:1}).waitFor();
+    await page.evaluate(()=>document.fonts.ready);
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
+    assert.equal(overflow,false,`Horizontal overflow at ${width}`);
+    assert.ok(!requests.some(u=>/assets\/App-|firestore.googleapis|identitytoolkit.googleapis/.test(u)),'Public page must not load ERP/Firebase');
+    if(width<1024){
+      await page.getByRole('button',{name:'Open menu'}).click();
+      await page.getByRole('navigation',{name:'Mobile navigation'}).getByRole('link',{name:/About us/}).click();
+      await page.getByRole('button',{name:'Open menu'}).click();
+      await page.keyboard.press('Escape');
+      assert.equal(await page.getByRole('button',{name:'Open menu'}).getAttribute('aria-expanded'),'false');
+    }
+    await page.getByRole('tab',{name:/Healthcare/}).click();
+    await page.getByRole('heading',{name:'Support the systems that matter.'}).waitFor();
+    await page.keyboard.press('ArrowRight');
+    await page.getByRole('heading',{name:'Behind every seamless stay.'}).waitFor();
+    await page.getByRole('tab',{name:/Manufacturing/}).click();
+    await page.evaluate(()=>{window.__opened=[];window.open=url=>{window.__opened.push(url);return null;};});
+    await page.getByLabel('Your name').fill('Test Customer');
+    await page.getByLabel('Company',{exact:true}).fill('Test Company');
+    await page.getByLabel('Email address').fill('test@example.com');
+    await page.getByLabel('I’m interested in').selectOption({label:'Power & control panels'});
+    await page.getByLabel('Your requirement').fill('Please quote for a distribution panel.');
+    await page.getByRole('button',{name:'Send enquiry via WhatsApp'}).click();
+    const destination=await page.evaluate(()=>window.__opened[0]);
+    assert.ok(destination.startsWith('https://wa.me/923004025599?text='));
+    assert.ok(decodeURIComponent(destination).includes('distribution panel'));
+    await page.getByRole('status').filter({hasText:'Your enquiry draft is ready'}).waitFor();
+    const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
+    for(const section of await page.locator('main section').all())await section.scrollIntoViewIfNeeded();
+    await page.evaluate(()=>window.scrollTo(0,0));
+    await page.screenshot({path:path.join(out,`site-${width}.png`),fullPage:true});
+    results.push({width,overflow,errors,violations:axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))});
+    assert.equal(errors.length,0);
+    fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(results,null,2));
+    assert.equal(axe.violations.length,0,`Accessibility violations at ${width}: ${JSON.stringify(axe.violations.map(v=>v.id))}`);
+    await context.close();
+  }
+  const page=await browser.newPage();
+  await page.goto('http://127.0.0.1:4173/portal',{waitUntil:'networkidle'});
+  await page.getByRole('button',{name:'Secure Login'}).waitFor();
+  await page.screenshot({path:path.join(out,'portal.png')});
+  assert.equal(await page.locator('meta[name="robots"]').getAttribute('content'),'noindex, nofollow');
+  fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(results,null,2));
+  console.log(JSON.stringify(results,null,2));
+  await browser.close();
+})().catch(error=>{console.error(error);process.exit(1);});

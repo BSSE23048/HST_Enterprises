@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
 import { auth } from './lib/firebase';
 
@@ -18,7 +18,7 @@ import {
   updateInvoice,
   updateProduct
 } from './lib/api';
-import { downloadInvoicePdf, viewInvoicePdf } from './lib/pdf';
+// PDF code is loaded only when a document action is requested.
 import type { Client, Invoice, InvoiceDraft, InvoiceItem, Product } from './types';
 
 type Toast = { id: number; message: string; tone: 'success' | 'error' | 'info' };
@@ -62,6 +62,7 @@ function getStatusColor(status: string, recordType: string = 'invoice') {
 }
 
 export default function App() {
+  const toastTimers = useRef(new Set<number>());
   const [user, setUser] = useState<User | null>(null);
   const [authChecking, setAuthChecking] = useState(true);
   const [loginEmail, setLoginEmail] = useState('');
@@ -97,18 +98,38 @@ export default function App() {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser); setAuthChecking(false);
-      if (currentUser) void refreshAll();
+    let mounted = true;
+    let version = 0;
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      const ownVersion = ++version;
+      setAuthChecking(true);
+      setUser(null); setClients([]); setProducts([]); setInvoices([]);
+      resetInvoice(); setClientForm(emptyClientForm); setProductForm(emptyProductForm);
+      setEditingClientId(null); setEditingProductId(null);
+      try {
+        const token = currentUser ? await currentUser.getIdTokenResult(true) : null;
+        if (!mounted || version !== ownVersion) return;
+        if (currentUser && token?.claims.admin === true) {
+          setUser(currentUser);
+          void refreshAll();
+        } else if (currentUser) {
+          setLoginError('This account is not authorized for the employee portal.');
+          await signOut(auth);
+        }
+      } catch {
+        if (mounted) setLoginError('Unable to verify access. Please sign in again.');
+      } finally {
+        if (mounted && version === ownVersion) setAuthChecking(false);
+      }
     });
-    return () => unsubscribe();
+    return () => { mounted = false; version++; unsubscribe(); toastTimers.current.forEach(clearTimeout); };
   }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault(); setLoginError(''); setBusy(true);
-    try { await signInWithEmailAndPassword(auth, loginEmail, loginPassword); } 
+    try { await signInWithEmailAndPassword(auth, loginEmail.trim(), loginPassword); } 
     catch { setLoginError('Access Denied. Invalid credentials.'); } 
-    finally { setBusy(false); }
+    finally { setLoginPassword(''); setBusy(false); }
   }
 
   async function handleLogout() {
@@ -116,12 +137,15 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!invoiceDraft.clientId || activeInvoice) return;
+    if (!user || !invoiceDraft.clientId || activeInvoice) return;
+    let cancelled = false;
     void loadNextSequence(String(invoiceDraft.clientId), invoiceDraft.recordType)
       .then((res) => {
+        if (cancelled) return;
         setInvoiceDraft(cur => ({ ...cur, invoiceSequence: res.data.nextSequence, invoiceNumber: res.data.invoiceNumber }));
       }).catch(() => undefined);
-  }, [activeInvoice, invoiceDraft.clientId, invoiceDraft.recordType]);
+    return () => { cancelled = true; };
+  }, [user, activeInvoice, invoiceDraft.clientId, invoiceDraft.recordType]);
 
   const filteredClients = useMemo(() => {
     const q = clientSearch.trim().toLowerCase();
@@ -190,13 +214,17 @@ export default function App() {
 
   function notify(m: string, t: Toast['tone'] = 'info') {
     const id = Date.now(); setToasts(c => [...c, { id, message: m, tone: t }]);
-    window.setTimeout(() => setToasts(c => c.filter(e => e.id !== id)), 4000);
+    const timer = window.setTimeout(() => { setToasts(c => c.filter(e => e.id !== id)); toastTimers.current.delete(timer); }, 4000);
+    toastTimers.current.add(timer);
   }
 
   async function refreshAll() {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
     setLoading(true);
     try {
       const [cr, pr, ir] = await Promise.all([loadClients(), loadProducts(), loadInvoices()]);
+      if (auth.currentUser?.uid !== uid) return;
       setClients(cr.data as any); setProducts(pr.data as any); setInvoices(ir.data as any);
     } catch (e: any) { notify('Failed to synchronize data with cloud', 'error'); } 
     finally { setLoading(false); }
@@ -233,7 +261,7 @@ export default function App() {
       const payload = { purchaserName: clientForm.purchaserName || "", displayName: clientForm.displayName, clientCode: clientForm.clientCode || "", businessName: clientForm.businessName || "", phone: clientForm.phone || "", email: clientForm.email || "", billingAddress: clientForm.billingAddress || "", notes: clientForm.notes || "", isActive: clientForm.isActive };
       if (editingClientId) { await updateClient(editingClientId, payload); notify('Client profile updated securely.', 'success'); } else { await createClient(payload); notify('New client added to directory.', 'success'); }
       setClientForm(emptyClientForm); setEditingClientId(null); await refreshAll();
-    } catch (e: any) { notify('Error saving client data.', 'error'); } finally { setBusy(false); }
+    } catch (e: any) { notify(e instanceof Error ? e.message : 'Unable to save client.', 'error'); } finally { setBusy(false); }
   }
 
   async function saveProduct(e: FormEvent) {
@@ -242,7 +270,7 @@ export default function App() {
       const payload = { productName: productForm.productName, description: productForm.description || "", defaultPrice: Number(productForm.defaultPrice), isActive: productForm.isActive };
       if (editingProductId) { await updateProduct(editingProductId, payload); notify('Catalog item updated.', 'success'); } else { await createProduct(payload); notify('New product added to catalog.', 'success'); }
       setProductForm(emptyProductForm); setEditingProductId(null); await refreshAll();
-    } catch (e: any) { notify('Error saving product data.', 'error'); } finally { setBusy(false); }
+    } catch (e: any) { notify(e instanceof Error ? e.message : 'Unable to save product.', 'error'); } finally { setBusy(false); }
   }
 
   async function saveInvoice(e: FormEvent) {
@@ -269,13 +297,13 @@ export default function App() {
         ...invoiceDraft, clientId: String(invoiceDraft.clientId), clientName: client?.displayName || "Unknown", clientCode: client?.clientCode || "INV",
         subtotal: calcTotal, grandTotal: calcTotal, status: finalStatus, amountPaid: Number(invoiceDraft.amountPaid || 0), balanceDue: calcBalance,
         itemCount: invoiceDraft.items.length, invoiceSequence: finalSequence, 
-        items: invoiceDraft.items.map((i: any) => ({ productId: i.productId || null, description: i.description || "", quantity: Number(i.quantity || 1), unitPrice: Number(i.unitPrice || 0), unit: i.unit || 'Nos' })) 
+        items: invoiceDraft.items.map((i: any) => ({ productId: i.productId || null, description: i.description || "", quantity: Number(i.quantity), unitPrice: Number(i.unitPrice || 0), unit: i.unit || 'Nos' })) 
       };
       
       if (activeInvoice) { await updateInvoice(activeInvoice.id, payload); notify('Document successfully updated.', 'success'); } 
       else { await createInvoice(payload); notify('Document securely generated.', 'success'); setActiveTab('history'); }
       await refreshAll(); resetInvoice();
-    } catch (e: any) { notify('System error saving document.', 'error'); } finally { setBusy(false); }
+    } catch (e: any) { notify(e instanceof Error ? e.message : 'Unable to save document.', 'error'); } finally { setBusy(false); }
   }
 
   async function editInvoice(invoice: Invoice) {
@@ -337,6 +365,7 @@ export default function App() {
 
       notify('Step 1: Downloading PDF...', 'info');
       // Pass the specially formatted DD-MM-YYYY date to PDF generator!
+      const { downloadInvoicePdf } = await import('./lib/pdf');
       await downloadInvoicePdf({ 
         client: client || null, invoice: detail, draftItems: detail.items || [], 
         invoiceNumber: detail.invoiceNumber || 'DRAFT', 
@@ -360,7 +389,7 @@ export default function App() {
       const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
       
       setTimeout(() => {
-        window.open(url, '_blank');
+        window.open(url, '_blank', 'noopener,noreferrer');
         notify('Step 2: WhatsApp opened. Drag your downloaded PDF into the chat!', 'success');
       }, 1000);
 
@@ -369,7 +398,7 @@ export default function App() {
   }
 
   async function removeInvoice(id: string) { if (!window.confirm('WARNING: This will permanently delete this record. Proceed?')) return; setBusy(true); try { await deleteInvoice(id); await refreshAll(); notify('Record securely deleted.', 'success'); } catch (e) { notify('Error deleting record.', 'error'); } finally { setBusy(false); } }
-  async function removeClient(id: string) { if (!window.confirm('WARNING: Delete this client and ALL associated history?')) return; try { await deleteClient(id); await refreshAll(); notify('Client removed from directory.', 'success'); } catch (e) { notify('Error deleting client.', 'error'); } }
+  async function removeClient(id: string) { if (!window.confirm('Delete this client? Existing invoice history will be retained.')) return; try { await deleteClient(id); await refreshAll(); notify('Client removed from directory.', 'success'); } catch (e) { notify('Error deleting client.', 'error'); } }
   async function removeProduct(id: string) { if (!window.confirm('Delete this product from catalog?')) return; try { await deleteProduct(id); await refreshAll(); notify('Product removed.', 'success'); } catch (e) { notify('Error deleting product.', 'error'); } }
   
   function startEditClient(client: Client) { setClientForm({ purchaserName: client.purchaserName ?? '', displayName: client.displayName, clientCode: client.clientCode, businessName: client.businessName ?? '', phone: client.phone ?? '', email: client.email ?? '', billingAddress: client.billingAddress ?? '', notes: client.notes ?? '', isActive: client.isActive }); setEditingClientId(client.id); }
@@ -397,6 +426,7 @@ export default function App() {
         terms: finalDoc.terms || '' 
       };
       
+      const { downloadInvoicePdf, viewInvoicePdf } = await import('./lib/pdf');
       if (action === 'view') await viewInvoicePdf(params as any); 
       else await downloadInvoicePdf(params as any);
     } catch (e) { notify('PDF Generation Error', 'error'); } 
@@ -417,17 +447,18 @@ export default function App() {
           <form onSubmit={handleLogin} className="space-y-5">
             {loginError && <div className="bg-rose-50 text-rose-600 p-4 rounded-xl text-sm font-bold text-center border border-rose-200 animate-pulse">{loginError}</div>}
             <div className="space-y-1">
-               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Admin Email</label>
-               <input type="email" placeholder="admin@hst.com" className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-5 py-4 text-sm font-medium outline-none transition-all focus:border-[#232361] focus:bg-white" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
+               <label htmlFor="portal-email" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Admin Email</label>
+               <input id="portal-email" autoComplete="username" type="email" placeholder="admin@hst.com" className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-5 py-4 text-sm font-medium outline-none transition-all focus:border-[#232361] focus:bg-white" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} required />
             </div>
             <div className="space-y-1">
-               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Master Password</label>
-               <input type="password" placeholder="••••••••" className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-5 py-4 text-sm font-medium outline-none transition-all focus:border-[#232361] focus:bg-white" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
+               <label htmlFor="portal-password" className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">Master Password</label>
+               <input id="portal-password" autoComplete="current-password" type="password" placeholder="••••••••" className="w-full rounded-xl border-2 border-slate-200 bg-slate-50 px-5 py-4 text-sm font-medium outline-none transition-all focus:border-[#232361] focus:bg-white" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required />
             </div>
             <button disabled={busy} className="w-full bg-gradient-to-r from-[#232361] to-[#1a1a45] text-white px-5 py-4 rounded-xl font-bold mt-4 shadow-lg shadow-[#232361]/30 hover:shadow-[#232361]/50 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:transform-none">
               {busy ? 'Authenticating...' : 'Secure Login'}
             </button>
           </form>
+          <a href="/" className="mt-6 block py-3 text-center text-sm font-semibold text-[#232361] hover:underline">← Back to company website</a>
         </div>
       </main>
     );

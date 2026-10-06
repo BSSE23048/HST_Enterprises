@@ -7,3 +7,12 @@ database/*.sqlite
 database/*.sqlite3
 .env
 .DS_Store
+
+.env.*
+!.env.example
+.firebase/
+*debug.log
+*.tsbuildinfo
+dist/
+maintenance/private-assets/
+maintenance/security-review/

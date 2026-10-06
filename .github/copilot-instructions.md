@@ -1,5 +1,6 @@
-- Keep the HST Enterprises invoice app local-only unless the user explicitly requests deployment.
-- Preserve the React, Express, and SQLite stack already in the workspace.
-- Prefer minimal, polished UI patterns with responsive layouts, validation, and direct invoice editing.
-- Use `database/schema.sql` as the source of truth for clients, products, invoices, and invoice items.
-- Keep client-specific invoice numbering, invoice history, PDF download, and print actions aligned with the existing workflow.
+- The deployed stack is React, Firebase Authentication, Firestore and Firebase Hosting.
+- Public portfolio at /; private ERP at /portal. Never expose ERP records on public pages.
+- Enforce admin custom claims in Firestore rules, not only in the UI.
+- Keep private signing assets and operator backups out of Hosting and source control.
+- Preserve invoice numbering, quotation conversion, catalogue data and PDF pagination.
+- Run type checking, security rule tests and browser checks before deployment.

@@ -10,15 +10,18 @@ import {
   orderBy 
 } from 'firebase/firestore';
 import { db } from './firebase';
+import type { Invoice } from '../types';
+import { clientInput, productInput, invoiceInput, identifier } from './validation';
 
 // --- CLIENTS ---
 export async function loadClients() {
   const querySnapshot = await getDocs(collection(db, 'clients'));
-  const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  const data = querySnapshot.docs.map(d => ({ ...d.data(), id: d.id }));
   return { data };
 }
 
-export async function createClient(body: any) {
+export async function createClient(input: unknown) {
+  const body = clientInput(input);
   const docRef = await addDoc(collection(db, 'clients'), {
     ...body,
     createdAt: new Date().toISOString()
@@ -26,23 +29,25 @@ export async function createClient(body: any) {
   return { data: { id: docRef.id, ...body } };
 }
 
-export async function updateClient(id: string, body: any) {
-  const docRef = doc(db, 'clients', id);
+export async function updateClient(id: string, input: unknown) {
+  const body = clientInput(input);
+  const docRef = doc(db, 'clients', identifier(id));
   await updateDoc(docRef, { ...body, updatedAt: new Date().toISOString() });
 }
 
 export async function deleteClient(id: string) {
-  await deleteDoc(doc(db, 'clients', id));
+  await deleteDoc(doc(db, 'clients', identifier(id)));
 }
 
 // --- PRODUCTS ---
 export async function loadProducts() {
   const querySnapshot = await getDocs(collection(db, 'products'));
-  const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  const data = querySnapshot.docs.map(d => ({ ...d.data(), id: d.id }));
   return { data };
 }
 
-export async function createProduct(body: any) {
+export async function createProduct(input: unknown) {
+  const body = productInput(input);
   const docRef = await addDoc(collection(db, 'products'), {
     ...body,
     createdAt: new Date().toISOString()
@@ -50,27 +55,28 @@ export async function createProduct(body: any) {
   return { data: { id: docRef.id, ...body } };
 }
 
-export async function updateProduct(id: string, body: any) {
-  const docRef = doc(db, 'products', id);
+export async function updateProduct(id: string, input: unknown) {
+  const body = productInput(input);
+  const docRef = doc(db, 'products', identifier(id));
   await updateDoc(docRef, { ...body, updatedAt: new Date().toISOString() });
 }
 
 export async function deleteProduct(id: string) {
-  await deleteDoc(doc(db, 'products', id));
+  await deleteDoc(doc(db, 'products', identifier(id)));
 }
 
 // --- INVOICES & QUOTATIONS ---
 export async function loadInvoices() {
   const q = query(collection(db, 'invoices'), orderBy('invoiceDate', 'desc'));
   const querySnapshot = await getDocs(q);
-  const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  const data = querySnapshot.docs.map(d => ({ ...d.data(), id: d.id }));
   return { data };
 }
 
 export async function loadInvoice(id: string) {
-  const docSnap = await getDoc(doc(db, 'invoices', id));
+  const docSnap = await getDoc(doc(db, 'invoices', identifier(id)));
   if (!docSnap.exists()) throw new Error('Record not found');
-  return { data: { id: docSnap.id, ...docSnap.data() } };
+  return { data: { ...docSnap.data(), id: docSnap.id } as Invoice };
 }
 
 // --- SMART SEQUENCE GENERATOR FOR INVOICES & QUOTATIONS ---
@@ -105,7 +111,8 @@ export async function loadNextSequence(clientId: number | string, recordType: 'i
   return { data: { clientId, nextSequence, invoiceNumber: formattedNumber } };
 }
 
-export async function createInvoice(body: any) {
+export async function createInvoice(input: unknown) {
+  const body = invoiceInput(input);
   const docRef = await addDoc(collection(db, 'invoices'), {
     ...body,
     createdAt: new Date().toISOString()
@@ -114,11 +121,13 @@ export async function createInvoice(body: any) {
   return { data: { id: docRef.id, ...body } };
 }
 
-export async function updateInvoice(id: string, body: any) {
-  const docRef = doc(db, 'invoices', id);
+export async function updateInvoice(id: string, input: Partial<Invoice>) {
+  const existing = await loadInvoice(id);
+  const body = invoiceInput({ ...existing.data, ...input });
+  const docRef = doc(db, 'invoices', identifier(id));
   await updateDoc(docRef, { ...body, updatedAt: new Date().toISOString() });
 }
 
 export async function deleteInvoice(id: string) {
-  await deleteDoc(doc(db, 'invoices', id));
+  await deleteDoc(doc(db, 'invoices', identifier(id)));
 }
