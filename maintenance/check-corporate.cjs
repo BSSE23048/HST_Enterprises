@@ -55,7 +55,7 @@ const out=path.join(__dirname,'corporate-review'); fs.mkdirSync(out,{recursive:t
   await page.goto('http://127.0.0.1:4173/portal',{waitUntil:'networkidle'});
   await page.getByRole('button',{name:'Secure Login'}).waitFor();
   await page.screenshot({path:path.join(out,'portal.png')});
-  assert.equal(await page.locator('meta[name="robots"]').getAttribute('content'),'noindex, nofollow');
+  assert.ok((await page.locator('meta[name="robots"]').getAttribute('content')).includes('noindex'));
   fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(results,null,2));
   console.log(JSON.stringify(results,null,2));
   await browser.close();

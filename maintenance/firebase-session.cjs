@@ -9,8 +9,8 @@ function cliRoot(){
 }
 async function session(){
  const auth=require(path.join(cliRoot(),'lib/auth.js'));
- const account=auth.getProjectDefaultAccount(path.resolve(__dirname,'..'));
- if(!account)throw Error('Firebase project login required.');
+ const account=auth.getAllAccounts().find(a=>a.user.email==='hstenterprisespk@gmail.com');
+ if(!account)throw Error('Sign in to hstenterprisespk@gmail.com using firebase login:add.');
  const token=await auth.getAccessToken(account.tokens.refresh_token,['https://www.googleapis.com/auth/cloud-platform']);
  return async function api(url,options={}){
   const response=await fetch(url,{...options,headers:{Authorization:`Bearer ${token.access_token}`,'Content-Type':'application/json',...options.headers},signal:AbortSignal.timeout(45000)});

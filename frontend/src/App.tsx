@@ -80,7 +80,6 @@ export default function App() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [activeInvoice, setActiveInvoice] = useState<Invoice | null>(null);
   
-  const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   
   const [clientSearch, setClientSearch] = useState('');
@@ -221,13 +220,11 @@ export default function App() {
   async function refreshAll() {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
-    setLoading(true);
     try {
       const [cr, pr, ir] = await Promise.all([loadClients(), loadProducts(), loadInvoices()]);
       if (auth.currentUser?.uid !== uid) return;
       setClients(cr.data as any); setProducts(pr.data as any); setInvoices(ir.data as any);
     } catch (e: any) { notify('Failed to synchronize data with cloud', 'error'); } 
-    finally { setLoading(false); }
   }
 
   function resetInvoice() {

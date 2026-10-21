@@ -9,8 +9,15 @@ const {session}=require('./firebase-session.cjs');
  const accounts=await api(`https://identitytoolkit.googleapis.com/v1/projects/${project}/accounts:lookup`,{method:'POST',body:JSON.stringify({localId:[expectedUid]})});
  const user=accounts.users?.[0];
  if(!user||user.email!=='admin@hst.com'||user.disabled)throw Error('Administrator identity mismatch.');
- const claims={...JSON.parse(user.customAttributes||'{}'),admin:true};
- await api(`https://identitytoolkit.googleapis.com/v1/projects/${project}/accounts:update`,{method:'POST',body:JSON.stringify({localId:expectedUid,customAttributes:JSON.stringify(claims)})});
+ if(process.argv.includes('--admin-only')){
+  const claims={...JSON.parse(user.customAttributes||'{}'),admin:true};
+  await api(`https://identitytoolkit.googleapis.com/v1/projects/${project}/accounts:update`,{method:'POST',body:JSON.stringify({localId:expectedUid,customAttributes:JSON.stringify(claims)})});
+  console.log('Admin claim granted to the verified existing ERP administrator.');return;
+ }
+ if(!process.argv.includes('--assets'))throw Error('Specify --admin-only or --assets.');
+ const release=await api(`https://firebaserules.googleapis.com/v1/projects/${project}/releases/cloud.firestore`);
+ const rules=await api(`https://firebaserules.googleapis.com/v1/${release.rulesetName}`);
+ if(!rules.source.files.some(f=>f.content.includes('match /privateAssets/{id}')&&f.content.includes("request.auth.token.get('admin', false) == true")))throw Error('Deploy the reviewed admin-only rules before provisioning signing images.');
  const fields={};
  for(const [key,name]of [['signature','Authorized_sign.png'],['stamp','HST_Stamp.png']]){
   const file=path.join(__dirname,'private-assets',name);

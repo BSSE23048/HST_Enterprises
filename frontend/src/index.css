@@ -40,3 +40,5 @@ body {
   border-radius: 999px;
 }
 
+
+.route-message { min-height: 100vh; padding: 15vh 24px; text-align: center; font-family: sans-serif; background: #f8f8f5; color: #232361; }

@@ -1,42 +1,15 @@
-# HST Enterprises Local Invoice System
+﻿# HST Enterprises
 
-Local-only invoice generation and client management for HST Enterprises.
+React, TypeScript, Tailwind CSS and Firebase Authentication/Firestore, hosted on Firebase Hosting.
 
-## Stack
-- Frontend: React + Tailwind CSS
-- Backend: Node.js + Express
-- Database: SQLite
+- Public website: https://hstenterprisespk.com/
+- Private employee ERP: /portal
+- Local development: copy .env.example to .env, fill the public Firebase configuration, then run npm install and npm run dev.
+- Checks: npm run typecheck
+- Production build: npm run build
 
-## What is implemented
-- Client CRUD with client-specific invoice prefixes
-- Product CRUD with default per-piece pricing
-- Invoice generation, editing, deletion, and history view
-- Client-specific invoice numbering such as `PT-001`
-- Live line-item totals and grand total calculations
-- PDF download and print actions from the invoice workspace
-- SQLite database bootstrap with strict foreign-key constraints
+The homepage is pre-rendered for search engines and works without JavaScript. The authenticated ERP and PDF generator load separately. Firestore requires an admin custom claim. Signing images are retrieved from the admin-only privateAssets/signing document.
 
-## Architecture
-- `frontend/` contains the React dashboard, invoice builder, PDF actions, and local UI state.
-- `backend/` contains the Express API, SQLite access, and CRUD routes.
-- `database/schema.sql` is the source of truth for local schema creation.
-- `scripts/init-db.js` initializes the SQLite file from the schema.
+This OneDrive workspace uses maintenance/prepare-deploy.py and maintenance/build-deploy.cjs for an isolated build. The build script also synchronizes the JSON-LD CSP hash with firebase.json. Do not deploy source documents, backups or maintenance directories.
 
-## Folder structure
-- `backend/src/routes/` API routes for clients, products, and invoices
-- `backend/src/db/` SQLite connection helper
-- `frontend/src/lib/` API and PDF helpers
-- `frontend/src/` dashboard UI and styles
-- `database/` schema and local `.sqlite3` file
-- `scripts/` database bootstrap script
-
-## Local development
-- Install dependencies: `npm install`
-- Initialize the SQLite file: `npm run db:init`
-- Run both apps locally: `npm run dev`
-- Build both workspaces: `npm run build`
-
-The backend starts on port `4000` and the frontend starts on port `5173`.
-
-## Schema source
-The schema creation queries live in [database/schema.sql](database/schema.sql).
+See maintenance/SECURITY-REVIEW.md for the file-by-file changes, checks and security boundaries. Company copy is in frontend/src/corporate/content.ts; SEO metadata is in frontend/src/seo.ts.

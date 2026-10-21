@@ -1,22 +1,41 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { lazy, Suspense } from 'react';
-import './index.css';
-
-const CorporateSite = lazy(() => import('./corporate/CorporateSite'));
-const EmployeePortal = lazy(() => import('./App'));
-const path = window.location.pathname.replace(/\/+$/, '') || '/';
-const isPortal = path === '/portal' || path.startsWith('/portal/') || path === '/admin';
-if (isPortal) {
-  document.title = 'Employee Portal | HST Enterprises';
-  const robots = document.createElement('meta');
-  robots.name = 'robots'; robots.content = 'noindex, nofollow'; document.head.appendChild(robots);
+import React from "react";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { applyMetadata } from "./seo";
+import "./index.css";
+async function boot() {
+  const root = document.getElementById("root")!;
+  const path = location.pathname.replace(/\/+$/, "") || "/";
+  const portal =
+    path === "/portal" || path.startsWith("/portal/") || path === "/admin";
+  applyMetadata(portal ? "portal" : path === "/" ? "home" : "missing");
+  if (path === "/") {
+    const { default: Site } = await import("./corporate/CorporateSite");
+    const app = (
+      <React.StrictMode>
+        <Site />
+      </React.StrictMode>
+    );
+    if (root.dataset.prerendered === "true") hydrateRoot(root, app);
+    else createRoot(root).render(app);
+  } else if (portal) {
+    const { default: App } = await import("./App");
+    createRoot(root).render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>,
+    );
+  } else
+    createRoot(root).render(
+      <main className="route-message">
+        <h1>Page not found</h1>
+        <p>This page may have moved.</p>
+        <a href="/">Return to HST Enterprises</a>
+      </main>,
+    );
 }
-
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <Suspense fallback={<div role="status" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#f8f7f3', color: '#232361', fontFamily: 'sans-serif', fontSize: 14 }}>Loading HST Enterprises…</div>}>
-      {isPortal ? <EmployeePortal /> : path === '/' ? <CorporateSite /> : <div style={{ padding: '15vh 24px', textAlign: 'center', fontFamily: 'sans-serif' }}><h1>Page not found</h1><p>This page may have moved.</p><a href="/">Return to HST Enterprises</a> · <a href="/portal">Employee portal</a></div>}
-    </Suspense>
-  </React.StrictMode>
-);
+void boot().catch(() => {
+  const root = document.getElementById("root")!;
+  if (root.dataset.prerendered !== "true")
+    root.textContent =
+      "Unable to load the application. Please refresh or contact HST Enterprises.";
+});

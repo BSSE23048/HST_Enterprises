@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import { renderInvoicePdf } from './deploy-build/src/lib/pdf.ts';
+import { renderInvoicePdf as render } from './deploy-build/src/lib/pdf.ts';
+const signingAssets = { signature: 'data:image/png;base64,' + (await fs.readFile(new URL('./private-assets/Authorized_sign.png', import.meta.url))).toString('base64'), stamp: 'data:image/png;base64,' + (await fs.readFile(new URL('./private-assets/HST_Stamp.png', import.meta.url))).toString('base64') };
+const renderInvoicePdf = params => render({ ...params, signingAssets });
 globalThis.fetch = async file => ({ ok: true, blob: async () => new Blob([await fs.readFile(new URL(`./deploy-build/public${file}`, import.meta.url))]) });
 globalThis.FileReader = class {
   readAsDataURL(blob) {

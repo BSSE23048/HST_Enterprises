@@ -6,7 +6,7 @@ root = Path(__file__).resolve().parent.parent
 target = root / 'maintenance' / 'deploy-build'
 target.mkdir(exist_ok=True)
 files = list((root / 'frontend' / 'src').rglob('*')) + list((root / 'frontend' / 'public').rglob('*'))
-files += [root / 'frontend' / name for name in ['index.html', 'vite.config.ts', 'postcss.config.cjs', 'tailwind.config.cjs', 'tsconfig.json']]
+files += [root / 'frontend' / name for name in ['index.html', 'prerender.ts', 'vite.config.ts', 'postcss.config.cjs', 'tailwind.config.cjs', 'tsconfig.json']]
 for source in files:
     if not source.is_file():
         continue
@@ -23,5 +23,6 @@ for source in files:
         data = subprocess.check_output(['git', 'show', f'HEAD:{relative.as_posix()}'], cwd=root)
     destination.write_bytes(data)
 package = json.loads((root / 'frontend' / 'package.json').read_text())
+package['overrides'] = json.loads((root / 'package.json').read_text()).get('overrides', {})
 (target / 'package.json').write_text(json.dumps(package, indent=2))
 print(f'Prepared isolated build at {target}')

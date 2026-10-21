@@ -9,9 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "framer-motion": "^12.0.0",
     "firebase": "^12.14.0",
-    "jspdf": "^3.0.1",
+    "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

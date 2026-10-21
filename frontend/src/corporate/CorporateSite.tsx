@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react';
-import { LazyMotion, domAnimation, m, useReducedMotion } from 'framer-motion';
+import { useState } from 'react';
+import { Reveal } from './Reveal';
+export { Reveal } from './Reveal';
 import Navigation, { Brand } from './Navigation';
 import Contact from './Contact';
 import FeaturedProjects from './FeaturedProjects';
@@ -7,10 +8,6 @@ import { Icon } from './Icons';
 import { brands, company, industries, services, whatsappLink } from './content';
 import './corporate.css';
 
-export function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
-  const reduced = useReducedMotion();
-  return <m.div className={className} initial={reduced ? false : { opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.08 }} transition={{ duration: 0.6, delay: reduced ? 0 : delay, ease: [0.22, 1, 0.36, 1] }}>{children}</m.div>;
-}
 function Hero() {
   return <section className="hero section-inner" aria-labelledby="hero-title">
     <div className="hero-copy"><Reveal><p className="eyebrow"><span/>YOUR PARTNER IN INDUSTRIAL PROGRESS</p><h1 id="hero-title">The power<br/>behind your<br/><em>next big move.</em></h1><p className="hero-description">Industrial expertise. Dependable supply.<br/>Electrical and power solutions that move your business forward — from a team that puts your needs first.</p><div className="hero-actions"><a className="button button-maroon" href="#contact">Discuss your requirement <Icon name="diagonal" size={19}/></a><a className="text-link" href="#expertise">Explore our expertise <Icon name="arrow" size={19}/></a></div></Reveal>
@@ -51,5 +48,5 @@ function Footer() {
   return <footer className="corporate-footer"><div className="section-inner"><div className="footer-main"><div><Brand light/><p>Importer. General order supplier.<br/>Contractor & services.<br/><span>Power for your trust.</span></p></div><div className="footer-links"><p className="footer-label">EXPLORE</p><a href="#projects">Featured projects</a><a href="#expertise">Our expertise</a><a href="#about">About HST</a><a href="#industries">Industries we serve</a><a href="#contact">Get in touch</a></div><div className="footer-links"><p className="footer-label">LET’S CONNECT</p><a href={`tel:+${company.whatsapp}`}>{company.phone}</a><a href="tel:+924237664202">{company.telephone}</a><a href={`mailto:${company.email}`}>{company.email}</a><a href={whatsappLink()} target="_blank" rel="noreferrer">Chat on WhatsApp <Icon name="diagonal" size={15}/></a></div><div className="footer-portal"><Icon name="portal" size={24}/><h3>Your work.<br/>One workspace.</h3><a href="/portal">Employee portal <Icon name="arrow" size={18}/></a><small>Private access for the HST team.</small></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} HST Enterprises. All rights reserved.</span><span>Lahore, Pakistan <span className="footer-dot">•</span> Built on trust.</span></div></div></footer>;
 }
 export default function CorporateSite() {
-  return <LazyMotion features={domAnimation}><div className="corporate"><a className="skip-link" href="#main-content">Skip to content</a><div className="utility-bar"><div className="section-inner"><span>IMPORTER, GENERAL ORDER SUPPLIER, CONTRACTOR & SERVICES</span><a href="tel:+924237664202"><Icon name="phone" size={12}/> +92 42 37664202</a></div></div><Navigation/><main id="main-content" tabIndex={-1}><Hero/><BrandStrip/><FeaturedProjects/><Expertise/><About/><Industries/><Process/><Contact/></main><Footer/><a className="floating-whatsapp" href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Chat with HST Enterprises on WhatsApp"><Icon name="whatsapp" size={27}/><span>Let’s talk</span><span className="whatsapp-notification"/></a></div></LazyMotion>;
+  return <div className="corporate"><a className="skip-link" href="#main-content">Skip to content</a><div className="utility-bar"><div className="section-inner"><span>IMPORTER, GENERAL ORDER SUPPLIER, CONTRACTOR & SERVICES</span><a href="tel:+924237664202"><Icon name="phone" size={12}/> +92 42 37664202</a></div></div><Navigation/><main id="main-content" tabIndex={-1}><Hero/><BrandStrip/><FeaturedProjects/><Expertise/><About/><Industries/><Process/><Contact/></main><Footer/><a className="floating-whatsapp" href={whatsappLink()} target="_blank" rel="noreferrer" aria-label="Chat with HST Enterprises on WhatsApp"><Icon name="whatsapp" size={27}/><span>Let’s talk</span><span className="whatsapp-notification"/></a></div>;
 }

@@ -11,5 +11,12 @@ for (const [key, suffix] of Object.entries(mapping)) {
   env[`VITE_FIREBASE_${suffix}`] = config[key];
 }
 execFileSync(process.execPath, [path.join(build,'node_modules/vite/bin/vite.js'),'build'], {cwd:build,env,stdio:'inherit'});
-const hosting = JSON.parse(fs.readFileSync(path.join(__dirname,'..','firebase.json'),'utf8')).hosting;
+const configPath = path.join(__dirname,'..','firebase.json');
+const deployment = JSON.parse(fs.readFileSync(configPath,'utf8'));
+const hosting = deployment.hosting;
+const schemaHash = fs.readFileSync(path.join(build,'schema-csp-hash.txt'),'utf8').trim();
+for (const group of hosting.headers) for (const header of group.headers) {
+  if (header.key === 'Content-Security-Policy') header.value = header.value.replace(/script-src[^;]+/, `script-src 'self' ${schemaHash}`);
+}
+fs.writeFileSync(configPath, JSON.stringify(deployment,null,2)+'\n');
 fs.writeFileSync(path.join(build,'firebase.deploy.json'),JSON.stringify({hosting:{...hosting,public:'dist'}},null,2));

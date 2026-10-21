@@ -132,6 +132,7 @@ export async function renderInvoicePdf(params: {
     docInstance.setTextColor(COLORS.TEXT);
     docInstance.text('Tel: 042-37664202', col2X, startY + 5.5);
     docInstance.text('Fax: 042-37664302', col2X, startY + 10.5);
+    docInstance.textWithLink('www.hstenterprisespk.com', col2X, startY + 15.5, { url: 'https://hstenterprisespk.com' });
 
     docInstance.setFont(FONTS.BOLD, 'bold');
     docInstance.setFontSize(9.5);

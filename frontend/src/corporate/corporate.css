@@ -912,3 +912,7 @@ html:has(.corporate) { scroll-behavior: smooth; scroll-padding-top: 100px; backg
   .corporate .massive-footprint-banner { padding: 32px 24px; }
 }
 
+
+.corporate .reveal { transition: opacity .6s ease, transform .6s ease; }
+.corporate .reveal-pending { opacity: 0; transform: translateY(22px); }
+@media(prefers-reduced-motion:reduce) { .corporate .reveal-pending { opacity:1; transform:none; } }
