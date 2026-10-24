@@ -18,7 +18,7 @@ const base=process.env.HST_TEST_URL||'http://127.0.0.1:4174';
  assert.ok(schema['@graph'].find(x=>x['@type']==='WebSite').name==='HST Enterprises');
  const favicon=await page.locator('link[rel="icon"][sizes="192x192"]').getAttribute('href');
  assert.equal((await page.request.get(base+favicon)).status(),200);
- await page.locator('.project-row summary').first().click();assert.equal(await page.locator('.project-row').first().getAttribute('open'),'');
+ await page.locator('.mega-project-card summary').first().click();assert.equal(await page.locator('.mega-project-card details').first().getAttribute('open'),'');
  await page.getByRole('button',{name:'Load interactive map of our Lahore office'}).click();await page.locator('iframe').waitFor();
  await page.waitForTimeout(1200);blocked.push(...await page.evaluate(()=>window.__csp));
  for(const asset of ['Authorized_sign.png','HST_Stamp.png'])assert.equal((await page.request.get(`${base}/${asset}`)).status(),404);

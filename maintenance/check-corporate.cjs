@@ -38,7 +38,7 @@ const out=path.join(__dirname,'corporate-review'); fs.mkdirSync(out,{recursive:t
     await page.getByLabel('Your requirement').fill('Please quote for a distribution panel.');
     await page.getByRole('button',{name:'Send enquiry via WhatsApp'}).click();
     const destination=await page.evaluate(()=>window.__opened[0]);
-    assert.ok(destination.startsWith('https://wa.me/923004025599?text='));
+    assert.ok(destination.startsWith('https://wa.me/923084103434?text='));
     assert.ok(decodeURIComponent(destination).includes('distribution panel'));
     await page.getByRole('status').filter({hasText:'Your enquiry draft is ready'}).waitFor();
     const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();

@@ -1,0 +1,11 @@
+#hst-analytics-preferences { font: 14px/1.6 system-ui, sans-serif; color: #222538; }
+#hst-analytics-preferences button, #hst-analytics-preferences a { font: inherit; }
+.hst-analytics-settings { position: fixed; z-index: 45; bottom: 12px; left: 12px; min-height: 44px; padding: 8px 14px; border: 1px solid #767680; border-radius: 5px; background: #f8f7f3; color: #232361; cursor: pointer; }
+.hst-analytics-notice { position: fixed; z-index: 100; bottom: 64px; left: 12px; width: min(440px, calc(100vw - 24px)); max-height: calc(100dvh - 88px); overflow: auto; padding: 22px; border: 1px solid #767680; border-radius: 8px; background: #f8f7f3; box-shadow: 0 8px 40px #22253833; }
+.hst-analytics-notice[hidden] { display: none; }
+.hst-analytics-notice h2 { font-size: 18px; margin: 0 0 10px; color: #232361; }
+.hst-analytics-notice p { margin: 0 0 12px; }
+.hst-analytics-notice a { color: #790e13; text-decoration: underline; }
+.hst-analytics-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.hst-analytics-actions button { flex: 1 1 150px; min-height: 44px; padding: 10px; border: 1px solid #232361; border-radius: 4px; color: #232361; background: #fff; cursor: pointer; }
+#hst-analytics-preferences :focus-visible { outline: 3px solid #790e13; outline-offset: 3px; }

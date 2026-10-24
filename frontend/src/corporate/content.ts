@@ -1,15 +1,19 @@
 export const company = {
   name: 'HST Enterprises',
   tagline: 'Power for your trust.',
-  phone: '+92 300 4025599',
+  phone: '+92 308 4103434',
   telephone: '+92 42 37664202',
-  email: 'hstenterprisespk@gmail.com',
+  email: 'info@hstenterprisespk.com',
+  salesEmail: 'sales@hstenterprisespk.com',
   address: '6-Muhammadia Electric Market, 15-Brandreth Road, Lahore, Pakistan',
-  whatsapp: '923004025599',
+  whatsapp: '923084103434',
+  hours: 'Monday–Saturday, 10 AM–8 PM. Sunday closed.',
+  maps: 'https://maps.google.com/maps?cid=10431938053836300556',
+  linkedin: 'https://www.linkedin.com/company/hst-enterprises',
 };
 export const whatsappLink = (message = 'Hello HST Enterprises, I would like to discuss an industrial or electrical requirement. Please connect me with your team.') =>
   `https://wa.me/${company.whatsapp}?text=${encodeURIComponent(message)}`;
-export const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(company.address)}`;
+export const mapLink = company.maps;
 
 export const services = [
   { icon: 'supply', title: 'Electrical & industrial supply', description: 'The right components for the job. A considered range of protection (MCCBs, MCBs, ELCBs, ACBs), switching, hardware, and industrial essentials.', tags: ['MCCBs & MCBs', 'ELCBs & ACBs', 'Switches & relays'] },

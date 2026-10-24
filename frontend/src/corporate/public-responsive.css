@@ -1,0 +1,50 @@
+/* Public website only; keep the private portal's layout independent. */
+.corporate .catalogue-visual { aspect-ratio: 4 / 3; width: 100%; overflow: hidden; background: #f2f1ed; }
+.corporate .catalogue-visual img { display: block; width: 100%; height: 100%; object-fit: contain; padding: 24px; }
+.corporate .catalogue-illustration { position: relative; display: flex; align-items: center; justify-content: center; color: #232361; background: linear-gradient(145deg, #f5f4f0, #e9e8e2); border-bottom: 1px solid #deddd6; }
+.corporate .catalogue-illustration > svg { width: 72px; height: 72px; opacity: .85; }
+.corporate .catalogue-visual-label { position: absolute; top: 20px; left: 22px; right: 22px; font-size: 12px; font-weight: 700; letter-spacing: .035em; }
+.corporate .catalogue-visual-caption { position: absolute; bottom: 18px; font-size: 11px; color: #585a66; }
+.corporate .catalogue-card { border-radius: 6px; }
+.corporate .catalogue-card-body { padding: 24px; }
+.corporate .catalogue-card h3 { text-wrap: balance; }
+.corporate .catalogue-selected-variant { font-size: 13px; line-height: 1.7; color: #232361; overflow-wrap: anywhere; margin: 0 0 10px; }
+.corporate .catalogue-verification { padding: 0 0 16px; }
+.corporate .catalogue-filters > *, .corporate .catalogue-grid > *, .corporate .category-content-grid > * { min-width: 0; }
+.corporate .catalogue-filters select, .corporate .catalogue-variant select { max-width: 100%; text-overflow: ellipsis; }
+.corporate #catalogue { scroll-margin-top: 110px; }
+.corporate .catalogue-anchor { display: block; height: 0; scroll-margin-top: 110px; }
+.corporate :is(h1, h2, h3) { overflow-wrap: break-word; }
+.corporate :is(input, select, textarea) { max-width: 100%; }
+.corporate .category-page :is(a, p, li), .corporate .catalogue-static { overflow-wrap: anywhere; }
+.corporate .category-catalogue-link a { display: inline-flex; align-items: center; min-height: 48px; gap: 12px; }
+.corporate .catalogue-rfq { min-height: 48px; white-space: normal; }
+.corporate .catalogue-rfq svg { flex-shrink: 0; }
+.corporate .catalogue-card:focus-within { outline: 2px solid #232361; outline-offset: 3px; }
+.corporate .catalogue-more button { min-height: 48px; }
+.corporate .floating-whatsapp { bottom: max(20px, env(safe-area-inset-bottom)); right: max(16px, env(safe-area-inset-right)); }
+.corporate { padding-bottom: 84px; }
+@media (max-width: 767px) {
+  .corporate .section-heading { flex-wrap: wrap; gap: 24px; }
+  .corporate .hero-actions { flex-wrap: wrap; }
+  .corporate .hero-actions > * { max-width: 100%; }
+  .corporate .catalogue-heading h2 { font-size: clamp(28px, 7.2vw, 40px); line-height: 1.22; letter-spacing: -.035em; }
+  .corporate .catalogue-card-body { padding: 20px; }
+  .corporate .catalogue-visual { aspect-ratio: 16 / 10; }
+  .corporate .catalogue-filters { gap: 18px; }
+  .corporate .catalogue-results-bar { align-items: center; gap: 8px; padding-block: 12px; }
+  .corporate .category-intro h1 { font-size: clamp(29px, 8vw, 42px); line-height: 1.2; }
+  .corporate .mobile-nav { padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+  #hst-analytics-preferences .hst-analytics-notice { max-height: min(50dvh, 440px); }
+  body:has(.mobile-nav) #hst-analytics-preferences,
+  .corporate:has(.mobile-nav) .floating-whatsapp { visibility: hidden; }
+}
+@media (min-width: 768px) and (max-width: 1099px) {
+  .corporate .catalogue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1100px) {
+  .corporate .catalogue-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .corporate *, .corporate *::before, .corporate *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

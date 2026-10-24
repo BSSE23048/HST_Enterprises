@@ -13,9 +13,82 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "**/*.map",
+      "**/*.pdf",
+      "**/maintenance/**",
+      "**/src/**",
+      "**/private-assets/**",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.py",
+      "**/*.cjs"
     ],
     "rewrites": [
+      {
+        "source": "/products/category/circuit-protection",
+        "destination": "/product-categories/circuit-protection.html"
+      },
+      {
+        "source": "/products/category/motor-control",
+        "destination": "/product-categories/motor-control.html"
+      },
+      {
+        "source": "/products/category/sensors-automation",
+        "destination": "/product-categories/sensors-automation.html"
+      },
+      {
+        "source": "/products/category/cables-wires",
+        "destination": "/product-categories/cables-wires.html"
+      },
+      {
+        "source": "/products/category/panels-enclosures",
+        "destination": "/product-categories/panels-enclosures.html"
+      },
+      {
+        "source": "/products/category/switches-indicators",
+        "destination": "/product-categories/switches-indicators.html"
+      },
+      {
+        "source": "/products/category/cable-accessories",
+        "destination": "/product-categories/cable-accessories.html"
+      },
+      {
+        "source": "/products/category/circuit-protection/",
+        "destination": "/product-categories/circuit-protection.html"
+      },
+      {
+        "source": "/products/category/motor-control/",
+        "destination": "/product-categories/motor-control.html"
+      },
+      {
+        "source": "/products/category/sensors-automation/",
+        "destination": "/product-categories/sensors-automation.html"
+      },
+      {
+        "source": "/products/category/cables-wires/",
+        "destination": "/product-categories/cables-wires.html"
+      },
+      {
+        "source": "/products/category/panels-enclosures/",
+        "destination": "/product-categories/panels-enclosures.html"
+      },
+      {
+        "source": "/products/category/switches-indicators/",
+        "destination": "/product-categories/switches-indicators.html"
+      },
+      {
+        "source": "/products/category/cable-accessories/",
+        "destination": "/product-categories/cable-accessories.html"
+      },
+      {
+        "source": "/products",
+        "destination": "/products.html"
+      },
+      {
+        "source": "/products/",
+        "destination": "/products.html"
+      },
       {
         "source": "/portal",
         "destination": "/portal/index.html"
@@ -23,12 +96,93 @@
       {
         "source": "/portal/**",
         "destination": "/portal/index.html"
+      },
+      {
+        "source": "/industrial-switchgear/",
+        "destination": "/industrial-switchgear/index.html"
+      },
+      {
+        "source": "/mccb-circuit-breakers/",
+        "destination": "/mccb-circuit-breakers/index.html"
+      },
+      {
+        "source": "/industrial-electrical-cables/",
+        "destination": "/industrial-electrical-cables/index.html"
+      },
+      {
+        "source": "/electrical-control-components/",
+        "destination": "/electrical-control-components/index.html"
       }
     ],
     "redirects": [
       {
+        "source": "/product-categories/circuit-protection.html",
+        "destination": "/products/category/circuit-protection",
+        "type": 301
+      },
+      {
+        "source": "/product-categories/motor-control.html",
+        "destination": "/products/category/motor-control",
+        "type": 301
+      },
+      {
+        "source": "/product-categories/sensors-automation.html",
+        "destination": "/products/category/sensors-automation",
+        "type": 301
+      },
+      {
+        "source": "/product-categories/cables-wires.html",
+        "destination": "/products/category/cables-wires",
+        "type": 301
+      },
+      {
+        "source": "/product-categories/panels-enclosures.html",
+        "destination": "/products/category/panels-enclosures",
+        "type": 301
+      },
+      {
+        "source": "/product-categories/switches-indicators.html",
+        "destination": "/products/category/switches-indicators",
+        "type": 301
+      },
+      {
+        "source": "/product-categories/cable-accessories.html",
+        "destination": "/products/category/cable-accessories",
+        "type": 301
+      },
+      {
+        "source": "/products.html",
+        "destination": "/products",
+        "type": 301
+      },
+      {
         "source": "/admin",
         "destination": "/portal",
+        "type": 301
+      },
+      {
+        "source": "/industrial-switchgear/index.html",
+        "destination": "/industrial-switchgear/",
+        "type": 301
+      },
+      {
+        "source": "/mccb-circuit-breakers/index.html",
+        "destination": "/mccb-circuit-breakers/",
+        "type": 301
+      },
+      {
+        "source": "/industrial-electrical-cables/index.html",
+        "destination": "/industrial-electrical-cables/",
+        "type": 301
+      },
+      {
+        "source": "/electrical-control-components/index.html",
+        "destination": "/electrical-control-components/",
+        "type": 301
+      },
+      {
+        "source": "/index.html",
+        "destination": "/",
         "type": 301
       }
     ],
@@ -38,7 +192,7 @@
         "headers": [
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' 'sha256-k7PQVzXR8630cTehuduCH2cqLLjMZXD78aXDGLxJpUk='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com; frame-src https://maps.google.com https://www.google.com blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"
+            "value": "default-src 'self'; script-src 'self' 'sha256-GOjXit8/bnmAllINBk2HjtBwacOZF9kSbSbaNsA7+lQ=' 'sha256-H6eH9f/vsSsenR/Z5e56zLLXQ4helCvLpBEWMp17xsU=' 'sha256-pOgUv75LGqAuDQx0eYbLyxpvA+2NpbqFFI/B0/21/k0=' 'sha256-D1gQuhwBSlNPEvWSu+x2kZwmaicoTuBfqq6K125i/I4=' 'sha256-0CBchRZpwWqrv5reeE25cr87HVG0V/ItR7jpex5C2yg=' 'sha256-v7Ul56i1+7eys1NGpiWITCeeHaavd3VB4qkSehwfkL0=' 'sha256-ofgmA3OCAv8LrYTMC7Jbl5Rv4RhDNn+Mqc+eygnktm0=' 'sha256-FBgXjAW3lDaeOtwa8hFXnkrk9sXHHmY1vLlmQSFoh7c=' 'sha256-FqQhsLXuH+ClNDkBLdtn8axDjcCZlVcBYOOV5SwX9vg=' 'sha256-SpT0UYEa+YSsyomTw9pjELMAeNwryYr/cPm9d6y/ww4=' 'sha256-MKunxlL0s5/O4P3tyd+qdXgoJEouBmyHdr8M2sfl0Jc=' 'sha256-QRbVpc8JK5nj38S3eOHVdHsj5/3DdttiHLsT2jXUouk=' 'sha256-J7uLq86MpNfXpV+QODixaoDFl19+e9HWblnxl3NKsW8=' https://www.googletagmanager.com/gtag/js; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.google-analytics.com https://region1.google-analytics.com; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com; frame-src https://maps.google.com https://www.google.com blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests"
           },
           {
             "key": "X-Frame-Options",

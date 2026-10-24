@@ -1,11 +1,19 @@
-import { company, services } from "./corporate/content";
+import { company } from "./corporate/content";
+import { categories, categoryPath } from "./corporate/categories";
+import { catalogueCategoryPages, catalogueCategoryPath, findCatalogueCategory } from './corporate/catalogueCategories';
 export const siteUrl = "https://hstenterprisespk.com";
 export const pages = {
   home: {
-    title: "Industrial Electrical Supplier in Lahore | HST Enterprises",
+    title: "Electrical Equipment & Switchgear Supplier Lahore | HST Enterprises",
     description:
-      "HST Enterprises supplies industrial cables, MCCB and MCB breakers, electrical switchgear, AMF/ATS panels and technical services from Brandreth Road, Lahore.",
+      "Source industrial switchgear, MCCBs, circuit breakers, cables and electrical control components from HST Enterprises in Lahore, Pakistan. Request a quotation.",
     path: "/",
+    robots: "index, follow, max-image-preview:large",
+  },
+  products: {
+    title: "Electrical Product Catalogue | HST Enterprises Lahore",
+    description: "Browse electrical products, brands and listed variants from HST Enterprises in Lahore. Explore circuit protection, cables and control components and request a quotation.",
+    path: "/products",
     robots: "index, follow, max-image-preview:large",
   },
   portal: {
@@ -23,6 +31,17 @@ export const pages = {
     robots: "noindex, nofollow",
   },
 };
+export type PageMetadata = typeof pages.home;
+export const publicPages: PageMetadata[] = [pages.home, pages.products, ...catalogueCategoryPages.map(category => ({
+  title: `${category.seoTitle} | HST Enterprises`, description: category.description + ' Request a quotation from HST Enterprises in Lahore.', path: catalogueCategoryPath(category), robots: pages.home.robots,
+})), ...categories.map(category => ({
+  title: category.title, description: category.description, path: categoryPath(category), robots: pages.home.robots,
+}))];
+export const metadataForPath = (pathname: string): PageMetadata => {
+  const normalized = pathname.replace(/\/+$/, '') || '/';
+  if (normalized === '/portal' || normalized.startsWith('/portal/') || normalized === '/admin') return pages.portal;
+  return publicPages.find(page => (page.path.replace(/\/+$/, '') || '/') === normalized) ?? pages.missing;
+};
 export const schema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -33,9 +52,21 @@ export const schema = {
       url: `${siteUrl}/`,
       logo: `${siteUrl}/favicon-192.png`,
       image: `${siteUrl}/company/industry.webp`,
-      description: pages.home.description,
-      telephone: "+923004025599",
+      description: `${pages.home.description} Project supply experience includes PKLI, Dolmen Mall and Lyari Expressway.`,
+      telephone: `+${company.whatsapp}`,
       email: company.email,
+      contactPoint: [
+        { "@type": "ContactPoint", contactType: "general enquiries and support", email: company.email },
+        { "@type": "ContactPoint", contactType: "sales and quotations", email: company.salesEmail },
+      ],
+      sameAs: [company.linkedin],
+      hasMap: company.maps,
+      areaServed: { "@type": "Country", name: "Pakistan" },
+      openingHoursSpecification: [{
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        opens: "10:00", closes: "20:00",
+      }],
       address: {
         "@type": "PostalAddress",
         streetAddress: "6-Muhammadia Electric Market, 15-Brandreth Road",
@@ -55,19 +86,6 @@ export const schema = {
         "Motor control panels",
         "Power factor improvement plants",
       ],
-      hasOfferCatalog: {
-        "@type": "OfferCatalog",
-        name: "Electrical supply and technical services",
-        itemListElement: services.map((s) => ({
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: s.title,
-            description: s.description,
-            provider: { "@id": `${siteUrl}/#organization` },
-          },
-        })),
-      },
     },
     {
       "@type": "WebSite",
@@ -88,8 +106,37 @@ export const schema = {
     },
   ],
 };
-export function applyMetadata(kind: keyof typeof pages) {
-  const page = pages[kind];
+export function schemaForPage(page: PageMetadata, products?: { id: string; name: string; brand: string | null }[]) {
+  return {
+    "@context": schema["@context"],
+    "@graph": [
+      ...schema["@graph"].filter(entity => entity["@type"] !== "WebPage"),
+      { "@type": page.path === '/products' || findCatalogueCategory(page.path) ? "CollectionPage" : "WebPage", "@id": `${siteUrl}${page.path}#webpage`, url: siteUrl + page.path,
+        name: page.title, description: page.description, inLanguage: "en",
+        ...(products ? { mainEntity: { "@id": `${siteUrl}${page.path}#catalogue-list` } } : {}),
+        isPartOf: { "@id": `${siteUrl}/#website` }, about: { "@id": `${siteUrl}/#organization` },
+        ...(page.path !== '/' ? { breadcrumb: { "@id": `${siteUrl}${page.path}#breadcrumb` } } : {}),
+      },
+      ...(products ? [{
+        "@type": "ItemList", "@id": `${siteUrl}${page.path}#catalogue-list`,
+        name: page.title, numberOfItems: products.length,
+        itemListElement: products.map((product, index) => ({
+          "@type": "ListItem", position: index + 1,
+          name: `${product.brand ? product.brand + ' ' : ''}${product.name}`,
+          url: `${siteUrl}${page.path}#product-${product.id}`,
+        })),
+      }] : []),
+      ...(page.path === '/' ? [] : [{ "@type": "BreadcrumbList", "@id": `${siteUrl}${page.path}#breadcrumb`, itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/` },
+        ...(findCatalogueCategory(page.path) ? [
+          { "@type": "ListItem", position: 2, name: "Products", item: siteUrl + "/products" },
+          { "@type": "ListItem", position: 3, name: findCatalogueCategory(page.path)!.name, item: siteUrl + page.path },
+        ] : [{ "@type": "ListItem", position: 2, name: page.path === '/products' ? 'Products' : categories.find(c => categoryPath(c) === page.path)?.name ?? page.title, item: siteUrl + page.path }]),
+      ] }]),
+    ],
+  };
+}
+export function applyMetadata(page: PageMetadata) {
   document.title = page.title;
   const entries = [
     ["name", "description", page.description],
@@ -116,5 +163,5 @@ export function applyMetadata(kind: keyof typeof pages) {
     document.head.append(link);
   }
   link.href = siteUrl + page.path;
-  if (kind !== "home") document.getElementById("business-schema")?.remove();
+  if (!publicPages.some(publicPage => publicPage.path === page.path)) document.getElementById("business-schema")?.remove();
 }

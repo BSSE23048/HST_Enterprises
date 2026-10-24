@@ -29,3 +29,11 @@ Rollback copies are local and ignored under `maintenance/security-review/rollbac
 ## UI restoration
 At the user's request, the prior split-hero design, service cards, navigation and project presentation were restored. Security, favicon and SEO improvements remain. The restored layout passed mobile, tablet, desktop and portal smoke checks.
 
+## Public SEO expansion
+
+Four product category routes now generate individual static HTML, metadata and breadcrumbs. The sitemap is generated from the public route metadata only. Explicit redirects canonicalize category URLs; unknown routes still return 404. The homepage retains its design, with product links and confirmed project supply experience replacing unsupported project statistics and contract/specification claims.
+
+Business schema uses the confirmed phone, hours, address, Maps listing and LinkedIn profile. Category RFQs open WhatsApp drafts at 923084103434; they do not write to Firestore. Each JSON-LD payload has an exact CSP hash, and the isolated build checks an explicit output allowlist before writing deployment configuration. No new dependencies were introduced.
+
+Authentication, admin claims, Firestore/Storage rules, signing assets and ERP/PDF loading boundaries are unchanged. `check-public-seo.cjs` covers all five generated pages, with and without JavaScript, unique metadata, sitemap, CSP hashes, viewport widths 320–1440, redirects, real 404s, and the portal login. Deployment and Search Console submission are separate actions.
+
